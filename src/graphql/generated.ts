@@ -19,9 +19,6 @@ export type ResolverFn<TResult, TParent, TContext, TArgs> = (
 ) =>
   | Promise<import('mercurius-codegen').DeepPartial<TResult>>
   | import('mercurius-codegen').DeepPartial<TResult>
-export type RequireFields<T, K extends keyof T> = Omit<T, K> & {
-  [P in K]-?: NonNullable<T[P]>
-}
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string
@@ -32,13 +29,15 @@ export type Scalars = {
   _FieldSet: any
 }
 
+export enum Role {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ORGANIZATION_ADMIN = 'ORGANIZATION_ADMIN',
+  ORGANIZATION_USER = 'ORGANIZATION_USER',
+}
+
 export type Query = {
   __typename?: 'Query'
   profile: Profile
-}
-
-export type QueryprofileArgs = {
-  token: Scalars['String']
 }
 
 export type Profile = {
@@ -148,30 +147,37 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Role: Role
   Query: ResolverTypeWrapper<{}>
-  String: ResolverTypeWrapper<Scalars['String']>
   Profile: ResolverTypeWrapper<Profile>
+  String: ResolverTypeWrapper<Scalars['String']>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>
 }
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Query: {}
-  String: Scalars['String']
   Profile: Profile
+  String: Scalars['String']
   Boolean: Scalars['Boolean']
 }
+
+export type authDirectiveArgs = {
+  requires?: Maybe<Role>
+}
+
+export type authDirectiveResolver<
+  Result,
+  Parent,
+  ContextType = MercuriusContext,
+  Args = authDirectiveArgs
+> = DirectiveResolverFn<Result, Parent, ContextType, Args>
 
 export type QueryResolvers<
   ContextType = MercuriusContext,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  profile?: Resolver<
-    ResolversTypes['Profile'],
-    ParentType,
-    ContextType,
-    RequireFields<QueryprofileArgs, 'token'>
-  >
+  profile?: Resolver<ResolversTypes['Profile'], ParentType, ContextType>
 }
 
 export type ProfileResolvers<
@@ -187,6 +193,10 @@ export type ProfileResolvers<
 export type Resolvers<ContextType = MercuriusContext> = {
   Query?: QueryResolvers<ContextType>
   Profile?: ProfileResolvers<ContextType>
+}
+
+export type DirectiveResolvers<ContextType = MercuriusContext> = {
+  auth?: authDirectiveResolver<any, any, ContextType>
 }
 
 export type Loader<TReturn, TObj, TParams, TContext> = (
