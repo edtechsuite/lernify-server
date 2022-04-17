@@ -1,18 +1,22 @@
 import fastify from 'fastify'
-import { initAuthService } from './auth'
+import { applicationDefault, initializeApp } from 'firebase-admin/app'
 import { PORT } from './config'
+import { initHandlers } from './handlers'
 import { createLogger } from './logger'
 
 export function initApp() {
 	const logger = createLogger('application')
 
-	initAuthService()
-
+	initializeApp({
+		credential: applicationDefault(),
+	})
 	const app = fastify()
 
 	app.get('/ping', async function (req, reply) {
 		return reply.code(200)
 	})
+
+	initHandlers(app)
 
 	app.listen(PORT)
 

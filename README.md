@@ -9,6 +9,10 @@
 - Run `npm install` to install project dependency from the CLI
 - Run `npm run start` to start project from the CLI
 
+The project use GraphQl as a transport layer. Playground interface is accessible by url `/graphiql`
+
+GraphQl API is available by route `/graphql`
+
 ## Before commit
 
 - Add updates to commit message
