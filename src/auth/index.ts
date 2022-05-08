@@ -1,19 +1,31 @@
-import { getAuth } from 'firebase-admin/auth'
-import { getFirestore } from 'firebase-admin/firestore'
-import { createLogger } from '../logger'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { verifyIdToken } from './firebase'
+import { initHandlers } from './handlers'
 
-const logger = createLogger('auth')
+export default (app: FastifyInstance, opts: any, done: () => void) => {
+	app.decorate(
+		'verifyJWT',
+		async (request: FastifyRequest, reply: FastifyReply, done: () => void) => {
+			const idToken = request.headers['authorization']
 
-export async function getUserProfile(id: string) {
-	const db = getFirestore()
-	const userRef = await db.collection('users').doc(id)
-	const doc = await userRef.get()
-	const data = doc.data()
-	if (!data) {
-		throw new Error(`User with id "${id}" doesn't exists in the database`)
-	}
+			if (!idToken) {
+				return reply.status(401).send('Unauthorized')
+			}
 
-	return data
+			try {
+				const decodedToken = await verifyIdToken(idToken)
+				request.requestContext.set('decodedIdToken', decodedToken)
+			} catch (error) {
+				return reply.status(401).send(error)
+			}
+
+			done()
+		}
+	)
+
+	initHandlers(app)
+
+	app.log.info('Auth service initialized')
+
+	done()
 }
-
-logger.log('info', `Auth service initialized`)
