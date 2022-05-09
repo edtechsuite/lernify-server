@@ -18,3 +18,8 @@ export async function verifyIdToken(idToken: string) {
 	const decodedToken = await auth.verifyIdToken(idToken)
 	return decodedToken
 }
+
+export function createUser(email: string, password: string) {
+	const auth = getAuth()
+	return auth.createUser({ email, password })
+}

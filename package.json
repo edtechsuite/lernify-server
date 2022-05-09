@@ -4,7 +4,9 @@
 	"description": "",
 	"scripts": {
 		"start": "nodemon",
-		"build": "tsc -p tsconfig.json"
+		"build": "tsc -p tsconfig.json",
+		"migrate": "node-pg-migrate",
+		"provision": "ts-node ./src/provisioning/cli.ts"
 	},
 	"repository": {
 		"type": "git",
@@ -18,18 +20,22 @@
 	"homepage": "https://github.com/dmitrij-borchuk/lernify-server#readme",
 	"dependencies": {
 		"@fastify/auth": "^2.0.0",
+		"@fastify/postgres": "^4.0.0",
 		"@fastify/request-context": "^3.0.0",
 		"dotenv": "^16.0.0",
 		"fastify": "^3.27.4",
 		"firebase-admin": "^10.0.2",
 		"nanoid": "^3.3.4",
+		"node-pg-migrate": "^6.2.1",
 		"pg": "^8.7.3",
+		"prompts": "^2.4.2",
 		"winston": "^3.6.0"
 	},
 	"devDependencies": {
 		"@tsconfig/node17": "^1.0.0",
 		"@types/node": "^17.0.23",
 		"@types/pg": "^8.6.5",
+		"@types/prompts": "^2.0.14",
 		"nodemon": "^2.0.15",
 		"pino-pretty": "^7.6.1",
 		"ts-node": "^10.7.0",

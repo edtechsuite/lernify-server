@@ -7,11 +7,8 @@
 - Save it as a `service-account-key-secret.json` file in the project root
 - Add `GOOGLE_APPLICATION_CREDENTIALS=".\service-account-key-secret.json"` to the `.env` file
 - Run `npm install` to install project dependency from the CLI
+- Run migrations `npm run migrate up`
 - Run `npm run start` to start project from the CLI
-
-The project use GraphQl as a transport layer. Playground interface is accessible by url `/graphiql`
-
-GraphQl API is available by route `/graphql`
 
 ## Before commit
 
@@ -30,7 +27,6 @@ GraphQl API is available by route `/graphql`
 
 ## Plan
 
-- Login (optional)
 - Get me
 - Get my organizations
 - Create organization

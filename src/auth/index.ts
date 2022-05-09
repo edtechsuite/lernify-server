@@ -5,7 +5,7 @@ import { initHandlers } from './handlers'
 export default (app: FastifyInstance, opts: any, done: () => void) => {
 	app.decorate(
 		'verifyJWT',
-		async (request: FastifyRequest, reply: FastifyReply, done: () => void) => {
+		async (request: FastifyRequest, reply: FastifyReply) => {
 			const idToken = request.headers['authorization']
 
 			if (!idToken) {
@@ -15,11 +15,10 @@ export default (app: FastifyInstance, opts: any, done: () => void) => {
 			try {
 				const decodedToken = await verifyIdToken(idToken)
 				request.requestContext.set('decodedIdToken', decodedToken)
+				return
 			} catch (error) {
 				return reply.status(401).send(error)
 			}
-
-			done()
 		}
 	)
 
