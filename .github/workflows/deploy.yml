@@ -13,12 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
-#     strategy:
-#       matrix:
-#         node-version: [12.x, 14.x, 16.x]
-#         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js 14
@@ -29,3 +23,15 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
+    
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "attendance-tracker-server" #Must be unique in Heroku
+          heroku_email: "edtechsuite.dev@gmail.com"
+          appdir: "./build"
+#           healthcheck: "url
