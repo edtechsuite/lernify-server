@@ -12,6 +12,7 @@ import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 // https://github.com/sinclairzx81/typebox
 
 export function initApp() {
+	console.log('=-= PRIVATE_KEY', PRIVATE_KEY)
 	initializeApp({
 		credential: cert({
 			projectId: PROJECT_ID,
