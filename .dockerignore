@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+build
+.vscode
+.env
+.gitignore
+.editorconfig
+.prettierrc
+nodemon.json
+README.md

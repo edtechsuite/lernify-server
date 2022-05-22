@@ -2,17 +2,22 @@ import fastify from 'fastify'
 import fastifyAuth from '@fastify/auth'
 import fastifyPostgres from '@fastify/postgres'
 import { fastifyRequestContextPlugin } from '@fastify/request-context'
-import { applicationDefault, initializeApp } from 'firebase-admin/app'
+import { cert, initializeApp } from 'firebase-admin/app'
 import { dbConnectionString, isProduction, PORT } from './config'
 import authService from './auth'
 import { testConnection } from './utils/postgres'
+import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
 
 export function initApp() {
 	initializeApp({
-		credential: applicationDefault(),
+		credential: cert({
+			projectId: PROJECT_ID,
+			clientEmail: CLIENT_EMAIL,
+			privateKey: PRIVATE_KEY,
+		}),
 	})
 	const app = fastify({
 		logger: {
@@ -39,6 +44,7 @@ export function initApp() {
 		await testConnection(app)
 		app.log.info('Database connection successful')
 	})
+	app.register(require('@fastify/cors'))
 	app.register(fastifyAuth)
 
 	// Auth service should be initialized before other handlers
@@ -53,5 +59,5 @@ export function initApp() {
 		})
 	}
 
-	app.listen(PORT)
+	app.listen(PORT, '0.0.0.0')
 }

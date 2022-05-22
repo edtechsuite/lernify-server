@@ -39,7 +39,12 @@
 
 ## Env variables
 
-`GOOGLE_APPLICATION_CREDENTIALS`: Path to the `service account` credentials json file relative to the project root (eg `".\service-account-key-secret.json"`)
+`PROJECT_ID`: Firebase project id
+`CLIENT_EMAIL`: Firebase client email
+`PRIVATE_KEY`: Firebase private key
+
+You can find `PROJECT_ID`, `CLIENT_EMAIL`, `PRIVATE_KEY` in the Firebase `service account` credentials json file
+
 `PORT`: The port that service will listen to
 
 ## Significant dependency
@@ -48,3 +53,12 @@
 `firebase-admin`: SDK to access Firebase service
 `winston`: Logging tool
 `typescript`: We are using Typescript
+
+## Deploy (Heroku)
+
+- Install the Heroku CLI
+
+```
+heroku login
+git push heroku main
+```
