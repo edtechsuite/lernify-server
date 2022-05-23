@@ -22,7 +22,7 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
-      # - run: git config user.email "edtechsuite.dev@gmail.com" && git config user.name "Dmytro Borchuk" && git add -A && git commit -m "Updated code"
+      - run: git config user.email "edtechsuite.dev@gmail.com" && git config user.name "Dmytro Borchuk" && git add -A && git commit -m "Updated code"
       - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
