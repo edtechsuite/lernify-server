@@ -13,4 +13,4 @@ RUN npm run build
 
 WORKDIR /usr/app/build
 EXPOSE 4000
-CMD npm run migrate up && node ./index.js
+CMD npm run migrate && node ./index.js
