@@ -40,7 +40,9 @@ export function initApp() {
 	})
 	app.register(fastifyPostgres, {
 		connectionString: dbConnectionString,
-		ssl: false,
+		ssl: {
+			rejectUnauthorized: false,
+		},
 	})
 	app.after(async () => {
 		await testConnection(app)
