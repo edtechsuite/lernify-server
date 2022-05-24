@@ -6,7 +6,7 @@ export async function syncProfile(
 	email: string | undefined,
 	uid: string
 ) {
-	const name = getFireBaseUsername(uid) || email || ''
+	const name = (await getFireBaseUsername(uid)) || email || ''
 	console.log('=-= name, email', name, email)
 	const client = await app.pg.connect()
 	try {
