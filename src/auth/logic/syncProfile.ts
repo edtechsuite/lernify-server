@@ -6,15 +6,7 @@ export async function syncProfile(
 	email: string | undefined,
 	uid: string
 ) {
-	let name = ''
-	try {
-		const fbUserProfile = await getUserProfile(uid)
-		name = fbUserProfile.name
-	} catch (error) {
-		// Can't get the user profile from firebase.
-		// Using the email as the name
-		name = email || ''
-	}
+	const name = getFireBaseUsername(uid) || email || ''
 	const client = await app.pg.connect()
 	try {
 		const result = await client.query(
@@ -27,5 +19,15 @@ export async function syncProfile(
 		throw error
 	} finally {
 		client.release()
+	}
+}
+
+async function getFireBaseUsername(uid: string) {
+	try {
+		const fbUserProfile = await getUserProfile(uid)
+		return fbUserProfile.name
+	} catch (error) {
+		// Can't get the user profile from firebase.
+		return null
 	}
 }
