@@ -7,7 +7,6 @@ export async function syncProfile(
 	uid: string
 ) {
 	const name = (await getFireBaseUsername(uid)) || email || ''
-	console.log('=-= name, email', name, email)
 	const client = await app.pg.connect()
 	try {
 		const result = await client.query(
@@ -26,7 +25,6 @@ export async function syncProfile(
 async function getFireBaseUsername(uid: string) {
 	try {
 		const fbUserProfile = await getUserProfile(uid)
-		console.log('=-= fbUserProfile', JSON.stringify(fbUserProfile, null, 2))
 		return fbUserProfile.name
 	} catch (error) {
 		// Can't get the user profile from firebase.

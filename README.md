@@ -54,11 +54,8 @@ You can find `PROJECT_ID`, `CLIENT_EMAIL`, `PRIVATE_KEY` in the Firebase `servic
 `winston`: Logging tool
 `typescript`: We are using Typescript
 
-## Deploy (Heroku)
+## Migrations
 
-- Install the Heroku CLI
+To create migration script run `npm run migrate.create my migration script` where `my migration script` is short description of the migration. It will create file xxx_my-migration-script.js in migrations folder.
 
-```
-heroku login
-git push heroku main
-```
+To migrate database run `npm run migrate.up`
