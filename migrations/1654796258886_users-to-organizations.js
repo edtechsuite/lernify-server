@@ -17,6 +17,7 @@ exports.up = (pgm) => {
 			notNull: true,
 			references: 'organizations(id)',
 		},
+		role: { type: 'varchar(100)', notNull: true },
 		...getCommonColumns(pgm),
 	})
 }

@@ -10,9 +10,6 @@ export function initHandlers(app: FastifyInstance) {
 			headers: {
 				Authorization: { type: 'string' },
 			},
-			params: {
-				userId: { type: 'string' },
-			},
 		},
 		preHandler: [app.verifyJWT],
 		handler: async (req, reply) => {
@@ -21,9 +18,9 @@ export function initHandlers(app: FastifyInstance) {
 
 			try {
 				const result = await client.query(
-					`SELECT * FROM organizations
-						INNER JOIN "usersToOrganizations" ON organizations.id = "usersToOrganizations".organizationId
-						WHERE "usersToOrganizations".userId = $1`,
+					`SELECT * FROM "organizations"
+						INNER JOIN "usersToOrganizations" ON "organizations"."id" = "usersToOrganizations"."organizationId"
+						WHERE "usersToOrganizations"."userId" = (SELECT "id" FROM "users" WHERE "outerId"=$1)`,
 					[decodedToken.uid]
 				)
 				reply.send(result.rows)

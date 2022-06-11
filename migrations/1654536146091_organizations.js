@@ -7,7 +7,7 @@ const tableName = 'organizations'
 exports.up = (pgm) => {
 	pgm.createTable(tableName, {
 		id: 'id',
-		key: { type: 'varchar(1000)', notNull: true },
+		key: { type: 'varchar(1000)', notNull: true, unique: true },
 		name: { type: 'varchar(1000)', notNull: true },
 		owner: {
 			type: 'integer',

@@ -1,7 +1,7 @@
 export type OrganizationRecordFirebase = {
 	id: string
 	name: string
-	creator: number
+	creator: string
 }
 export type OrganizationRecord = {
 	id: string

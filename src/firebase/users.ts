@@ -1,4 +1,5 @@
 import { getFirestore } from 'firebase-admin/firestore'
+import { getCollectionData } from './utils'
 
 export async function getUsers(): Promise<UserRecordFirebase[]> {
 	const db = getFirestore()
@@ -17,9 +18,21 @@ export async function getUsers(): Promise<UserRecordFirebase[]> {
 	)
 }
 
-type UserRecordFirebase = {
+export async function getOrgUsers(orgId: string) {
+	return getCollectionData<OrgUserRecordFirebase>(
+		`organizations/${orgId}/users`
+	)
+}
+
+export type UserRecordFirebase = {
 	id: string
-	email: string
-	name: string
-	organizations: string[]
+	email?: string
+	name?: string
+	organizations?: string[]
+}
+export type OrgUserRecordFirebase = {
+	id: string
+	email?: string
+	name?: string
+	role?: string
 }
