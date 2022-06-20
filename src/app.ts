@@ -4,14 +4,16 @@ import fastifyPostgres from '@fastify/postgres'
 import { fastifyRequestContextPlugin } from '@fastify/request-context'
 import { cert, initializeApp } from 'firebase-admin/app'
 import { dbConnectionString, isProduction, PORT } from './config'
-import authService from './auth'
+import authService from './auth/index'
+import organizationsService from './organizations'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
+import { decorateWithAuth } from './auth/authDecorators'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
 
-export function initApp() {
+export async function initApp() {
 	initializeApp({
 		credential: cert({
 			projectId: PROJECT_ID,
@@ -50,8 +52,12 @@ export function initApp() {
 	app.register(require('@fastify/cors'))
 	app.register(fastifyAuth)
 
-	// Auth service should be initialized before other handlers
-	app.register(authService, { prefix: '/auth' })
+	// Auth decorators should be initialized before other handlers
+	decorateWithAuth(app)
+
+	await app.register(authService, { prefix: '/auth' })
+
+	await app.register(organizationsService, { prefix: '/organizations' })
 
 	app.after(routes)
 

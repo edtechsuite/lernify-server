@@ -3,6 +3,7 @@ import 'fastify'
 declare module 'fastify' {
 	interface FastifyInstance {
 		verifyJWT: verifyJWTFunc
+		getAuthSchema: () => FastifySchema
 	}
 }
 
