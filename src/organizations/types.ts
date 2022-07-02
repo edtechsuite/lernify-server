@@ -12,3 +12,5 @@ export type OrganizationRecord = {
 	createdAt: string
 	updatedAt: string
 }
+
+export type OrganizationCreate = Pick<OrganizationRecord, 'key' | 'name'>

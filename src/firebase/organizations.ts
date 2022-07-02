@@ -1,5 +1,6 @@
 import { getFirestore } from 'firebase-admin/firestore'
 import { OrganizationRecordFirebase } from '../organizations/types'
+import { UserRecordFirebase } from './users'
 
 export async function getOrganizations(): Promise<
 	OrganizationRecordFirebase[]
@@ -21,4 +22,13 @@ export async function getOrganizations(): Promise<
 			}
 		})
 	)
+}
+
+export async function createOrganization(
+	data: OrganizationRecordFirebase,
+	user: UserRecordFirebase
+) {
+	const db = getFirestore()
+	await db.collection('organizations').doc(data.id).set(data)
+	await db.collection(`organizations/${data.id}/users`).doc(user.id).set(user)
 }

@@ -6,6 +6,7 @@ import { cert, initializeApp } from 'firebase-admin/app'
 import { dbConnectionString, isProduction, PORT } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
+import usersService from './users'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
@@ -58,6 +59,8 @@ export async function initApp() {
 	await app.register(authService, { prefix: '/auth' })
 
 	await app.register(organizationsService, { prefix: '/organizations' })
+
+	await app.register(usersService, { prefix: '/users' })
 
 	app.after(routes)
 
