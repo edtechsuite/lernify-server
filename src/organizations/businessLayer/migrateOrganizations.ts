@@ -41,17 +41,20 @@ async function insertUsers2Org(
 	client: PoolClient,
 	organizations: OrganizationRecordFirebase[]
 ) {
+	console.log('=-= organizations', organizations)
 	const users = await Promise.all(
 		organizations.map(async (org) => {
 			return await getOrgUsers(org.id)
 		})
 	)
+	console.log('=-= users', users)
 	const orgToUsers = organizations.reduce<
 		Record<string, OrgUserRecordFirebase[]>
 	>((acc, org, i) => {
 		acc[org.id] = users[i]
 		return acc
 	}, {})
+	console.log('=-= orgToUsers', orgToUsers)
 	const usersValues = organizations.flatMap((org) => {
 		const users = orgToUsers[org.id]
 		return users.map((user) => [
@@ -76,7 +79,9 @@ async function insertUsers2Org(
 				)`
 		)
 		.join(',')
+	console.log('=-= valuesTpl', valuesTpl)
 	const values = usersValues.flat()
+	console.log('=-= values', values)
 
 	const query = `INSERT INTO "usersToOrganizations" ( "userId", "organizationId", "role", "updatedBy", "createdAt", "updatedAt" ) VALUES ${valuesTpl}`
 	return await client.query(query, values)
