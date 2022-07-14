@@ -32,3 +32,13 @@ export async function createOrganization(
 	await db.collection('organizations').doc(data.id).set(data)
 	await db.collection(`organizations/${data.id}/users`).doc(user.id).set(user)
 }
+
+export async function createUserInOrganization(
+	orgKey: string,
+	user: {
+		id: string
+	}
+) {
+	const db = getFirestore()
+	await db.collection(`organizations/${orgKey}/users`).doc(user.id).set(user)
+}
