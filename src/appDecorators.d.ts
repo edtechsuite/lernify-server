@@ -4,6 +4,10 @@ declare module 'fastify' {
 	interface FastifyInstance {
 		verifyJWT: verifyJWTFunc
 		getAuthSchema: () => FastifySchema
+		verifyOrgAccess: (
+			request: FastifyRequest<RouteConfig>,
+			reply: FastifyReply
+		) => Promise<undefined>
 	}
 }
 

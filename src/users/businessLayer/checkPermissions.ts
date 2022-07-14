@@ -1,5 +1,6 @@
 import { PoolClient } from 'pg'
 
+// TODO: use `verifyOrgAccess`
 export async function checkPermissions(
 	client: PoolClient,
 	userOuterId: string,

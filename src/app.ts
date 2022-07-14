@@ -10,6 +10,7 @@ import usersService from './users'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
+import { decorateOrgPermission } from './auth/orgAccessDecorator'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
@@ -53,8 +54,9 @@ export async function initApp() {
 	app.register(require('@fastify/cors'))
 	app.register(fastifyAuth)
 
-	// Auth decorators should be initialized before other handlers
+	// These decorators should be initialized before other handlers
 	decorateWithAuth(app)
+	decorateOrgPermission(app)
 
 	await app.register(authService, { prefix: '/auth' })
 

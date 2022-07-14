@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify'
+import { getUserByOuterId } from '../dal/getUserByOuterId'
 import { getDecodedToken } from '../utils/request-context'
 import { checkPermissions } from './businessLayer/checkPermissions'
+import { confirmInvitation, inviteUser } from './businessLayer/invite'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET /
@@ -137,8 +139,6 @@ export function initHandlers(app: FastifyInstance) {
 			const client = await app.pg.connect()
 			const { orgId, outerId } = req.params
 
-			console.log('=-= orgId', orgId)
-			console.log('=-= outerId', outerId)
 			try {
 				// TODO: use ABAC
 				const hasPermissions = await checkPermissions(
@@ -156,7 +156,6 @@ export function initHandlers(app: FastifyInstance) {
 					WHERE "usersToOrganizations"."organizationId" = $1 AND "usersToOrganizations"."userId" = (SELECT id FROM users WHERE "outerId" = $2)`,
 					[orgId, outerId]
 				)
-				console.log('=-= result', result)
 
 				if (result.rows.length === 0) {
 					reply.status(404)
@@ -164,7 +163,98 @@ export function initHandlers(app: FastifyInstance) {
 				}
 				reply.send(result.rows[0])
 			} catch (error: any) {
-				console.log('=-= error', error)
+				throw error
+			} finally {
+				client.release()
+			}
+		}
+	)
+
+	app.post<{
+		Body: {
+			email: string
+			role: string
+			orgId: number
+		}
+	}>(
+		'/invite',
+		{
+			schema: {
+				headers: {
+					Authorization: { type: 'string' },
+				},
+				body: {
+					type: 'object',
+					properties: {
+						email: { type: 'string' },
+						role: { type: 'string' },
+						orgId: { type: 'number' },
+					},
+				},
+			},
+			preHandler: [app.verifyJWT, app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			const decodedToken = getDecodedToken(req)
+			const client = await app.pg.connect()
+			const { email, role, orgId } = req.body
+			try {
+				return await app.pg.transact(async (client) => {
+					return await inviteUser(client, decodedToken.uid, email, orgId, role)
+				})
+			} catch (error: any) {
+				throw error
+			} finally {
+				client.release()
+			}
+		}
+	)
+
+	app.post<{
+		Body: {
+			token: string
+		}
+	}>(
+		'/confirmInvitation',
+		{
+			schema: {
+				headers: {
+					Authorization: { type: 'string' },
+				},
+				body: {
+					type: 'object',
+					properties: {
+						email: { type: 'string' },
+						role: { type: 'string' },
+						orgId: { type: 'number' },
+					},
+				},
+			},
+			preHandler: [app.verifyJWT],
+		},
+		async (req, reply) => {
+			const decodedToken = getDecodedToken(req)
+			const client = await app.pg.connect()
+			const { token } = req.body
+
+			try {
+				return await app.pg.transact(async (client) => {
+					if (!decodedToken.email) {
+						reply.status(400)
+						return reply.send('Email is absent in the auth token')
+					}
+
+					const user = await getUserByOuterId(client, decodedToken.uid)
+					const [code, message] = await confirmInvitation(
+						client,
+						token,
+						decodedToken.email,
+						user
+					)
+
+					reply.code(code).send(message)
+				})
+			} catch (error: any) {
 				throw error
 			} finally {
 				client.release()
