@@ -8,3 +8,7 @@ export async function getOrganizationByIdQuery(client: PoolClient, id: number) {
 		[id]
 	)
 }
+
+export async function getAllOrganization(client: PoolClient) {
+	return await client.query<OrganizationRecord>(`SELECT * FROM "organizations"`)
+}
