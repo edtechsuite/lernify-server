@@ -26,7 +26,7 @@ export async function createStudentQuery(
 		`INSERT INTO "students" (
 			"name", "tags", "organization", "updatedBy"
 		) VALUES (
-			$1, $2, (SELECT id FROM users WHERE "outerId"=$3), (SELECT id FROM users WHERE "outerId"=$4)
+			$1, $2, $3, $4
 		) RETURNING *`,
 		[data.name, data.tags, data.organization, data.updatedBy]
 	)
