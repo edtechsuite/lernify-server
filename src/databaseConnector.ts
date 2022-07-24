@@ -1,8 +1,9 @@
-import fastifyPostgres from '@fastify/postgres'
 import { FastifyInstance } from 'fastify'
+import fastifyPostgres from '@fastify/postgres'
+import fastifyPlugin from 'fastify-plugin'
 import { dbConnectionString } from './config'
 
-export function initDatabase(app: FastifyInstance) {
+export function databaseConnector(app: FastifyInstance) {
 	app.register(fastifyPostgres, {
 		connectionString: dbConnectionString,
 		ssl: {
@@ -10,3 +11,5 @@ export function initDatabase(app: FastifyInstance) {
 		},
 	})
 }
+
+export default fastifyPlugin(databaseConnector)

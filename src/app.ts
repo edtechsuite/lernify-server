@@ -11,7 +11,7 @@ import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
 import { decorateOrgPermission } from './auth/orgAccessDecorator'
-import { initDatabase } from './initDatabase'
+import databaseConnector from './databaseConnector'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
@@ -43,7 +43,7 @@ export async function initApp() {
 		},
 	})
 
-	initDatabase(app)
+	app.register(databaseConnector)
 
 	app.after(async () => {
 		await testConnection(app)
