@@ -17,6 +17,7 @@ import databaseConnector from './databaseConnector'
 // https://github.com/sinclairzx81/typebox
 
 export async function initApp() {
+	// TODO: move to separate plugin
 	initializeApp({
 		credential: cert({
 			projectId: PROJECT_ID,
@@ -35,6 +36,7 @@ export async function initApp() {
 		},
 		// ajv: {},
 	})
+	app.log.info('Initializing an application')
 
 	app.register(fastifyRequestContextPlugin, {
 		hook: 'preHandler',

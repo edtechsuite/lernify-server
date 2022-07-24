@@ -3,7 +3,7 @@ import fastifyPostgres from '@fastify/postgres'
 import fastifyPlugin from 'fastify-plugin'
 import { dbConnectionString } from './config'
 
-export function databaseConnector(app: FastifyInstance) {
+export async function databaseConnector(app: FastifyInstance) {
 	app.register(fastifyPostgres, {
 		connectionString: dbConnectionString,
 		ssl: {
