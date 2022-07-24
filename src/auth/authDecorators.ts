@@ -6,6 +6,7 @@ export function decorateWithAuth(app: FastifyInstance) {
 	app.decorate(
 		'verifyJWT',
 		async (request: FastifyRequest, reply: FastifyReply) => {
+			app.log.info('verifyJWT: Initiating verifying')
 			const idToken = request.headers['authorization']
 
 			if (!idToken || !request.user) {
@@ -15,6 +16,7 @@ export function decorateWithAuth(app: FastifyInstance) {
 			try {
 				const decodedToken = await verifyIdToken(idToken)
 				request.requestContext.set('decodedIdToken', decodedToken)
+				app.log.info('verifyJWT: decodedIdToken successfully set')
 				return
 			} catch (error) {
 				return reply.status(401).send(error)

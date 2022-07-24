@@ -12,21 +12,26 @@ export function initMigrationHandlers(app: FastifyInstance) {
 				Authorization: { type: 'string' },
 			},
 		},
-		preHandler: [app.verifyJWT],
+		preHandler: [app.ensureUserIsSystemAdmin],
 		handler: async (req, reply) => {
-			const decodedToken = getDecodedToken(req)
+			if (!req.user) {
+				return reply.code(401).send('Unauthorized')
+			}
 			const client = await app.pg.connect()
 
-			const { email, uid } = decodedToken
-			const user = await getUserByOuterId(client, uid)
-			req.log.info(`Migrating students. Initiator: ${uid}`)
-			const result = await migrateStudents(client, user)
+			try {
+				const { name, id } = req.user
+				req.log.info(`Migrating students. Initiator: ${name} (${id})`)
+				const result = await migrateStudents(client, req.user)
 
-			const message = `Students migration finished. Migrated ${result} students.`
+				const message = `Students migration finished. Migrated ${result} students.`
 
-			req.log.info(message)
+				req.log.info(message)
 
-			reply.status(200).send(message)
+				reply.status(200).send(message)
+			} finally {
+				client.release()
+			}
 		},
 	})
 }

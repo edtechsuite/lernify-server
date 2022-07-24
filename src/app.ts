@@ -1,5 +1,4 @@
 import fastify from 'fastify'
-import fastifyAuth from '@fastify/auth'
 import { fastifyRequestContextPlugin } from '@fastify/request-context'
 import { cert, initializeApp } from 'firebase-admin/app'
 import { isProduction, PORT } from './config'
@@ -12,6 +11,7 @@ import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
 import { decorateOrgPermission } from './auth/orgAccessDecorator'
 import databaseConnector from './databaseConnector'
+import { setCurrentUserHook } from './hooks/setCurrentUserHook'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
@@ -52,7 +52,6 @@ export async function initApp() {
 		app.log.info('Database connection successful')
 	})
 	app.register(require('@fastify/cors'))
-	app.register(fastifyAuth)
 
 	// These decorators should be initialized before other handlers
 	// TODO: use plugin
@@ -60,6 +59,8 @@ export async function initApp() {
 	decorateOrgPermission(app)
 
 	await app.register(authService, { prefix: '/auth' })
+
+	setCurrentUserHook(app)
 
 	await app.register(organizationsService, { prefix: '/organizations' })
 	await app.register(studentsService, { prefix: '/students' })
