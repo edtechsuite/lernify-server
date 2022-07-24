@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify'
-import { getDecodedToken } from '../utils/request-context'
 // import { createOrganization } from './businessLayer/createOrganization'
 // import { removeOrganization } from './businessLayer/removeOrganization'
 // import { StudentCreate } from './types'
@@ -16,7 +15,6 @@ export function initHandlers(app: FastifyInstance) {
 	// 	},
 	// 	preHandler: [app.verifyJWT],
 	// 	handler: async (req, reply) => {
-	// 		const decodedToken = getDecodedToken(req)
 	// 		const client = await app.pg.connect()
 	// 		try {
 	// 			const result = await client.query(
@@ -49,7 +47,6 @@ export function initHandlers(app: FastifyInstance) {
 	// 		preHandler: [app.verifyJWT],
 	// 	},
 	// 	async (req, reply) => {
-	// 		const decodedToken = getDecodedToken(req)
 	// 		const { id } = req.params
 	// 		const client = await app.pg.connect()
 	// 		try {
@@ -89,7 +86,6 @@ export function initHandlers(app: FastifyInstance) {
 	// 		preHandler: [app.verifyJWT],
 	// 	},
 	// 	async (req, reply) => {
-	// 		const decodedToken = getDecodedToken(req)
 	// 		const client = await app.pg.connect()
 	// 		try {
 	// 			return await createOrganization(app, decodedToken.uid, req.body)
@@ -129,7 +125,6 @@ export function initHandlers(app: FastifyInstance) {
 	// 		preHandler: [app.verifyJWT],
 	// 	},
 	// 	async (req, reply) => {
-	// 		const decodedToken = getDecodedToken(req)
 	// 		const client = await app.pg.connect()
 	// 		try {
 	// 			const result = await removeOrganization(

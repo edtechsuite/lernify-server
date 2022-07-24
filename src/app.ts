@@ -55,6 +55,7 @@ export async function initApp() {
 	app.register(fastifyAuth)
 
 	// These decorators should be initialized before other handlers
+	// TODO: use plugin
 	decorateWithAuth(app)
 	decorateOrgPermission(app)
 
