@@ -9,16 +9,19 @@ export function decorateOrgPermission(app: FastifyInstance) {
 		request: FastifyRequest<RouteConfig>,
 		reply: FastifyReply
 	) {
+		// TODO: use `request.user`
 		const idToken = request.headers['authorization']
 
 		if (!idToken) {
 			return reply.status(401).send('Unauthorized')
 		}
 
-		if (!request.body.orgId) {
+		const orgId = request.body?.orgId || request.params?.orgId
+
+		if (!orgId) {
 			return reply
 				.status(400)
-				.send(`"orgId" property is required in the request body`)
+				.send(`"orgId" property is required in the request body or params`)
 		}
 
 		const client = await app.pg.connect()
@@ -28,7 +31,7 @@ export function decorateOrgPermission(app: FastifyInstance) {
 			const hasAccess = await checkOrgPermissions(
 				client,
 				decodedToken.uid,
-				request.body.orgId
+				orgId
 			)
 			if (!hasAccess) {
 				return reply.status(403).send('Forbidden')
@@ -55,7 +58,10 @@ async function checkOrgPermissions(
 }
 
 type RouteConfig = {
-	Body: {
-		orgId: number
+	Body?: {
+		orgId?: number
+	}
+	Params?: {
+		orgId?: number
 	}
 }

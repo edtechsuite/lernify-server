@@ -12,10 +12,11 @@ export async function getStudentByIdQuery(client: PoolClient, id: number) {
 	// )
 }
 
-export async function getStudentsByOrg(client: PoolClient) {
-	// TODO
-	throw new Error('Not implemented')
-	// return await client.query<OrganizationRecord>(`SELECT * FROM "organizations"`)
+export async function getStudentsByOrg(client: PoolClient, id: number) {
+	return await client.query<StudentRecord>(
+		`SELECT * FROM "students" WHERE "organization" = $1`,
+		[id]
+	)
 }
 
 export async function createStudentQuery(

@@ -1,36 +1,39 @@
 import { FastifyInstance } from 'fastify'
+import { getStudentsByOrg } from '../dal/students'
 // import { createOrganization } from './businessLayer/createOrganization'
 // import { removeOrganization } from './businessLayer/removeOrganization'
 // import { StudentCreate } from './types'
 
 export function initHandlers(app: FastifyInstance) {
-	// // GET /all by user
-	// app.route({
-	// 	method: 'GET',
-	// 	url: `/`,
-	// 	schema: {
-	// 		headers: {
-	// 			Authorization: { type: 'string' },
-	// 		},
-	// 	},
-	// 	preHandler: [app.verifyJWT],
-	// 	handler: async (req, reply) => {
-	// 		const client = await app.pg.connect()
-	// 		try {
-	// 			const result = await client.query(
-	// 				`SELECT *, "organizations"."id" FROM "organizations"
-	// 					INNER JOIN "usersToOrganizations" ON "organizations"."id" = "usersToOrganizations"."organizationId"
-	// 					WHERE "usersToOrganizations"."userId" = (SELECT "id" FROM "users" WHERE "outerId"=$1) AND "organizations"."deleted" IS FALSE`,
-	// 				[decodedToken.uid]
-	// 			)
-	// 			reply.send(result.rows)
-	// 		} catch (error: any) {
-	// 			throw error
-	// 		} finally {
-	// 			client.release()
-	// 		}
-	// 	},
-	// })
+	// GET /all by organization
+	app.route<{
+		Params: {
+			orgId: number
+		}
+	}>({
+		method: 'GET',
+		url: `/byOrganization/:orgId`,
+		schema: {
+			params: {
+				type: 'object',
+				properties: {
+					orgId: { type: 'string' },
+				},
+			},
+		},
+		preHandler: [app.verifyOrgAccess],
+		handler: async (req, reply) => {
+			const client = await app.pg.connect()
+			try {
+				const result = await getStudentsByOrg(client, req.params.orgId)
+				reply.send(result.rows)
+			} catch (error: any) {
+				throw error
+			} finally {
+				client.release()
+			}
+		},
+	})
 	// // GET by id
 	// app.get<{
 	// 	Params: {
