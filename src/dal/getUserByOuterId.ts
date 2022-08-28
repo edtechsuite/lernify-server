@@ -1,8 +1,8 @@
-import { PoolClient } from 'pg'
+import { Pool } from 'pg'
 import { User } from '../users/types'
 
-export async function getUserByOuterId(client: PoolClient, outerId: string) {
-	const result = await client.query<User>(
+export async function getUserByOuterId(pool: Pool, outerId: string) {
+	const result = await pool.query<User>(
 		`SELECT * FROM users WHERE "outerId"=$1`,
 		[outerId]
 	)

@@ -1,9 +1,8 @@
 import fastify from 'fastify'
 import fastifyAuth from '@fastify/auth'
-import fastifyPostgres from '@fastify/postgres'
 import { fastifyRequestContextPlugin } from '@fastify/request-context'
 import { cert, initializeApp } from 'firebase-admin/app'
-import { dbConnectionString, isProduction, PORT } from './config'
+import { getConfig, isProduction, PORT } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
 import usersService from './users'
@@ -11,11 +10,14 @@ import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
 import { decorateOrgPermission } from './auth/orgAccessDecorator'
+import { databaseConnector } from './databaseConnector'
+import { setCurrentUserToRequest } from './users/setCurrentUserToRequest'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
 
-export async function initApp() {
+export async function App() {
+	// TODO: move to separate plugin
 	initializeApp({
 		credential: cert({
 			projectId: PROJECT_ID,
@@ -41,12 +43,12 @@ export async function initApp() {
 			decodedIdToken: undefined,
 		},
 	})
-	app.register(fastifyPostgres, {
-		connectionString: dbConnectionString,
-		ssl: {
-			rejectUnauthorized: false,
-		},
+
+	const config = getConfig()
+	app.register(databaseConnector, {
+		connectionString: config.dbConnectionString,
 	})
+
 	app.after(async () => {
 		await testConnection(app)
 		app.log.info('Database connection successful')
@@ -57,12 +59,13 @@ export async function initApp() {
 	// These decorators should be initialized before other handlers
 	decorateWithAuth(app)
 	decorateOrgPermission(app)
+	setCurrentUserToRequest(app)
 
 	await app.register(authService, { prefix: '/auth' })
 
-	await app.register(organizationsService, { prefix: '/organizations' })
-
 	await app.register(usersService, { prefix: '/users' })
+
+	await app.register(organizationsService, { prefix: '/organizations' })
 
 	app.after(routes)
 
@@ -73,5 +76,5 @@ export async function initApp() {
 		})
 	}
 
-	app.listen(PORT, '0.0.0.0')
+	return app
 }

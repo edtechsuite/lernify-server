@@ -1,4 +1,4 @@
-import { PoolClient } from 'pg'
+import { Pool } from 'pg'
 
 type UserToOrganizationData = {
 	userId: number
@@ -7,7 +7,7 @@ type UserToOrganizationData = {
 	updatedBy: number
 }
 export async function assignUserToOrganizationQuery(
-	client: PoolClient,
+	client: Pool,
 	data: UserToOrganizationData
 ) {
 	return await client.query(

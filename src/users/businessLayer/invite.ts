@@ -1,4 +1,4 @@
-import { PoolClient } from 'pg'
+import { PoolClient, Pool } from 'pg'
 import { inviteTokenExpiration } from '../../config'
 import { getOrganizationByIdQuery } from '../../dal/organizations'
 import { User } from '../types'
@@ -49,7 +49,7 @@ async function createInviteQuery(
 }
 
 export async function confirmInvitation(
-	client: PoolClient,
+	client: Pool,
 	token: string,
 	email: string,
 	user: User
@@ -85,7 +85,7 @@ export async function confirmInvitation(
 	return [200, 'Invitation confirmed']
 }
 
-async function getInviteQuery(client: PoolClient, token: string) {
+async function getInviteQuery(client: Pool, token: string) {
 	return client.query<Invite>(`SELECT * FROM invites WHERE token = $1`, [token])
 }
 type Invite = {

@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { PoolClient } from 'pg'
+import { Pool } from 'pg'
 import { verifyIdToken } from './firebase'
 
 export function decorateOrgPermission(app: FastifyInstance) {
@@ -21,12 +21,12 @@ export function decorateOrgPermission(app: FastifyInstance) {
 				.send(`"orgId" property is required in the request body`)
 		}
 
-		const client = await app.pg.connect()
+		const pool = await app.pg.pool
 
 		try {
 			const decodedToken = await verifyIdToken(idToken)
 			const hasAccess = await checkOrgPermissions(
-				client,
+				pool,
 				decodedToken.uid,
 				request.body.orgId
 			)
@@ -41,7 +41,7 @@ export function decorateOrgPermission(app: FastifyInstance) {
 }
 
 async function checkOrgPermissions(
-	client: PoolClient,
+	client: Pool,
 	userOuterId: string,
 	orgId: number
 ) {
