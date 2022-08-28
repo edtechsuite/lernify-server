@@ -16,5 +16,7 @@ export function getConfig() {
 			process.env.INVITE_TOKEN_EXPIRATION || oneDayInMs.toString(),
 			10
 		),
+		disableDatabaseSecureConnection:
+			process.env.DISABLE_DATABASE_SECURE_CONNECTION === 'true',
 	}
 }

@@ -42,6 +42,7 @@
 `PROJECT_ID`: Firebase project id
 `CLIENT_EMAIL`: Firebase client email
 `PRIVATE_KEY`: Firebase private key
+`DISABLE_DATABASE_SECURE_CONNECTION`: if `true` secure connection for the database will be disabled (used for the connect to the local Postgres instance)
 
 You can find `PROJECT_ID`, `CLIENT_EMAIL`, `PRIVATE_KEY` in the Firebase `service account` credentials json file
 
@@ -59,3 +60,52 @@ You can find `PROJECT_ID`, `CLIENT_EMAIL`, `PRIVATE_KEY` in the Firebase `servic
 To create migration script run `npm run migrate.create my migration script` where `my migration script` is short description of the migration. It will create file xxx_my-migration-script.js in migrations folder.
 
 To migrate database run `npm run migrate.up`
+
+## Tmp
+
+TODO: check user to perform data migration
+
+organization
+
+    id: TestOrg
+    mama: TestOrg
+
+user2org
+user: u1
+org:
+role
+
+user
+id: u1
+role: null
+role (organizational): manager, administrator, teacher (default)
+user
+id: u2
+name: some
+role: system-administrator
+
+===================
+
+organization
+id: string
+key: string
+name: string
+owner: user(id)
+
+user
+systemRole (global): system-administrator
+
+https://casbin.org/docs/en/supported-models
+
+final firebase structure:
+
+    db:
+        organizations
+            orgKey
+                attendance
+    							users
+
+    rules:
+        forbid all (no public access)
+
+invite flow: - send invite request with email - send email with `accept` btn - go to accept page - sign up (optional) - send accept request with token - record db

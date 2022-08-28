@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import fastifyPostgres from '@fastify/postgres'
 import fastifyPlugin from 'fastify-plugin'
+import { getConfig } from './config'
 
 export async function databaseConnector(
 	app: FastifyInstance,
@@ -8,11 +9,16 @@ export async function databaseConnector(
 		connectionString: string
 	}
 ) {
+	const { disableDatabaseSecureConnection } = getConfig()
 	app.register(fastifyPostgres, {
 		connectionString: options.connectionString,
-		ssl: {
-			rejectUnauthorized: false,
-		},
+		...(disableDatabaseSecureConnection
+			? {}
+			: {
+					ssl: {
+						rejectUnauthorized: false,
+					},
+			  }),
 	})
 }
 
