@@ -1,5 +1,13 @@
 // Reading `.env` file
 import 'dotenv/config'
-import { initApp } from './app'
+import { App } from './app'
+import { getConfig } from './config'
 
-initApp()
+async function initializeApp() {
+	const app = await App()
+	const config = getConfig()
+
+	app.listen(config.PORT, '0.0.0.0')
+}
+
+initializeApp()

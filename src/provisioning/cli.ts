@@ -30,6 +30,5 @@ const dbConnectionString =
 			'John Doe',
 		])
 		await client.end()
-		console.log('=-= res', res)
 	}
 })()

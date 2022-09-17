@@ -18,11 +18,12 @@ export function initMigrationHandlers(app: FastifyInstance) {
 				return reply.code(401).send('Unauthorized')
 			}
 			const client = await app.pg.connect()
+			const pool = await app.pg.pool
 
 			try {
 				const { name, id } = req.user
 				req.log.info(`Migrating students. Initiator: ${name} (${id})`)
-				const result = await migrateStudents(client, req.user)
+				const result = await migrateStudents(pool, req.user)
 
 				const message = `Students migration finished. Migrated ${result} students.`
 

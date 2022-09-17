@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { PoolClient } from 'pg'
+import { Pool } from 'pg'
 import { verifyIdToken } from './firebase'
 
 export function decorateOrgPermission(app: FastifyInstance) {
@@ -16,23 +16,23 @@ export function decorateOrgPermission(app: FastifyInstance) {
 			return reply.status(401).send('Unauthorized')
 		}
 
-		const orgId = request.body?.orgId || request.params?.orgId
+		// Trying to get `orgId` from request whatever it is
+		const orgId =
+			request.body?.orgId || request.params?.orgId || request.query?.orgId
 
 		if (!orgId) {
 			return reply
 				.status(400)
-				.send(`"orgId" property is required in the request body or params`)
+				.send(
+					`"orgId" property is required in the request body, params or query`
+				)
 		}
 
-		const client = await app.pg.connect()
+		const pool = await app.pg.pool
 
 		try {
 			const decodedToken = await verifyIdToken(idToken)
-			const hasAccess = await checkOrgPermissions(
-				client,
-				decodedToken.uid,
-				orgId
-			)
+			const hasAccess = await checkOrgPermissions(pool, decodedToken.uid, orgId)
 			if (!hasAccess) {
 				return reply.status(403).send('Forbidden')
 			}
@@ -44,7 +44,7 @@ export function decorateOrgPermission(app: FastifyInstance) {
 }
 
 async function checkOrgPermissions(
-	client: PoolClient,
+	client: Pool,
 	userOuterId: string,
 	orgId: number
 ) {
@@ -62,6 +62,9 @@ type RouteConfig = {
 		orgId?: number
 	}
 	Params?: {
+		orgId?: number
+	}
+	Querystring?: {
 		orgId?: number
 	}
 }

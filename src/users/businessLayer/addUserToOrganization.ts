@@ -1,9 +1,9 @@
-import { PoolClient } from 'pg'
+import { Pool } from 'pg'
 import { assignUserToOrganizationQuery } from '../../dal/users2organizations'
 import { createUserInOrganization } from '../../firebase/organizations'
 
 export async function addUserToOrganization(
-	client: PoolClient,
+	client: Pool,
 	orgId: number,
 	orgKey: string,
 	outerUserId: string,

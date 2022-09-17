@@ -8,6 +8,7 @@ export type StudentRecord = {
 	name: string
 	tags: string[]
 	organization: number
+	outerId: string
 
 	updatedBy: number
 	createdAt: string

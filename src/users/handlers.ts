@@ -2,9 +2,11 @@ import { FastifyInstance } from 'fastify'
 import { getUserByOuterId } from '../dal/getUserByOuterId'
 import { getDecodedToken } from '../utils/request-context'
 import { checkPermissions } from './businessLayer/checkPermissions'
+import { updateUser } from './businessLayer/editUser'
 import { confirmInvitation, inviteUser } from './businessLayer/invite'
 
 export function initHandlers(app: FastifyInstance) {
+	// TODO: should return user by id
 	// GET /
 	app.get<{
 		Params: {
@@ -170,6 +172,57 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
+	// put /:userId
+	app.put<{
+		Body: {
+			name: string
+		}
+		Params: {
+			userId: number
+		}
+	}>(
+		'/:userId',
+		{
+			schema: {
+				headers: {
+					Authorization: { type: 'string' },
+				},
+				body: {
+					type: 'object',
+					properties: {
+						name: { type: 'string' },
+					},
+				},
+				params: {
+					type: 'object',
+					required: ['userId'],
+					properties: {
+						userId: { type: 'number' },
+					},
+				},
+			},
+			preHandler: [app.verifyJWT],
+		},
+		async (req, reply) => {
+			const pool = await app.pg.pool
+			const { name } = req.body
+			const { userId } = req.params
+			const { user } = req
+			// TODO: use ABAC
+			const updatingItself = user?.id === userId
+			const isSysAdmin = user?.systemRole === 'system-administrator'
+			const hasPermissions = updatingItself || isSysAdmin
+			if (!hasPermissions) {
+				reply.status(403)
+				return reply.send('Forbidden')
+			}
+
+			return await (
+				await updateUser(pool, { id: userId, name })
+			).rows[0]
+		}
+	)
+
 	app.post<{
 		Body: {
 			email: string
@@ -235,31 +288,23 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		async (req, reply) => {
 			const decodedToken = getDecodedToken(req)
-			const client = await app.pg.connect()
+			const client = await app.pg.pool
 			const { token } = req.body
 
-			try {
-				return await app.pg.transact(async (client) => {
-					if (!decodedToken.email) {
-						reply.status(400)
-						return reply.send('Email is absent in the auth token')
-					}
-
-					const user = await getUserByOuterId(client, decodedToken.uid)
-					const [code, message] = await confirmInvitation(
-						client,
-						token,
-						decodedToken.email,
-						user
-					)
-
-					reply.code(code).send(message)
-				})
-			} catch (error: any) {
-				throw error
-			} finally {
-				client.release()
+			if (!decodedToken.email) {
+				reply.status(400)
+				return reply.send('Email is absent in the auth token')
 			}
+
+			const user = await getUserByOuterId(client, decodedToken.uid)
+			const [code, message] = await confirmInvitation(
+				client,
+				token,
+				decodedToken.email,
+				user
+			)
+
+			reply.code(code).send(message)
 		}
 	)
 }

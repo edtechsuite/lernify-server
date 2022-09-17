@@ -1,7 +1,7 @@
-import { PoolClient } from 'pg'
+import { Pool } from 'pg'
 import { OrganizationRecord } from '../organizations/types'
 
-export async function getOrganizationByIdQuery(client: PoolClient, id: number) {
+export async function getOrganizationByIdQuery(client: Pool, id: number) {
 	return await client.query<OrganizationRecord>(
 		`SELECT * FROM "organizations"
 		WHERE "id" = $1`,
@@ -9,6 +9,6 @@ export async function getOrganizationByIdQuery(client: PoolClient, id: number) {
 	)
 }
 
-export async function getAllOrganization(client: PoolClient) {
-	return await client.query<OrganizationRecord>(`SELECT * FROM "organizations"`)
+export async function getAllOrganization(pool: Pool) {
+	return await pool.query<OrganizationRecord>(`SELECT * FROM "organizations"`)
 }
