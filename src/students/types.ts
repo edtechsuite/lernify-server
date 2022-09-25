@@ -17,5 +17,5 @@ export type StudentRecord = {
 
 export type StudentCreate = Pick<
 	StudentRecord,
-	'tags' | 'name' | 'organization'
+	'tags' | 'name' | 'organization' | 'outerId'
 >

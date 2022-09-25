@@ -1,9 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import {
+	createStudentQuery,
 	getStudentByIdQuery,
 	getStudentsByOrg,
 	removeStudentQuery,
 } from '../dal/students'
+import { StudentCreate } from './types'
 // import { createOrganization } from './businessLayer/createOrganization'
 // import { removeOrganization } from './businessLayer/removeOrganization'
 // import { StudentCreate } from './types'
@@ -92,6 +94,48 @@ export function initHandlers(app: FastifyInstance) {
 			if (result.rows.length === 0) {
 				return reply.code(404).send('Not found')
 			}
+			reply.send(result.rows[0])
+		}
+	)
+	// POST by id
+	app.post<{
+		Body: StudentCreate
+	}>(
+		'/',
+		{
+			schema: {
+				headers: {
+					Authorization: { type: 'string' },
+				},
+				body: {
+					type: 'object',
+					properties: {
+						name: { type: 'string' },
+						tags: {
+							type: 'array',
+							items: {
+								type: 'string',
+							},
+						},
+						organization: { type: 'number' },
+						outerId: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			const pool = await app.pg.pool
+
+			if (!req.user) {
+				return reply.code(403).send('Forbidden')
+			}
+
+			const result = await createStudentQuery(pool, {
+				...req.body,
+				updatedBy: req.user.id,
+			})
+
 			reply.send(result.rows[0])
 		}
 	)
