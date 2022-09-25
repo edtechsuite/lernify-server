@@ -127,12 +127,13 @@ export function initHandlers(app: FastifyInstance) {
 		async (req, reply) => {
 			const pool = await app.pg.pool
 
-			if (!req.user) {
+			if (!req.user || !req.organization) {
 				return reply.code(403).send('Forbidden')
 			}
 
 			const result = await createStudentQuery(pool, {
 				...req.body,
+				organization: req.organization.id,
 				updatedBy: req.user.id,
 			})
 

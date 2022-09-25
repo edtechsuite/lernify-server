@@ -12,6 +12,7 @@ import { decorateWithAuth } from './auth/authDecorators'
 import { decorateOrgPermission } from './auth/orgAccessDecorator'
 import { databaseConnector } from './databaseConnector'
 import { setCurrentUserToRequest } from './users/setCurrentUserToRequest'
+import { setCurrentOrganizationToRequest } from './organizations/setCurrentOrganizationToRequest'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
@@ -61,6 +62,8 @@ export async function App() {
 	decorateWithAuth(app)
 	decorateOrgPermission(app)
 	setCurrentUserToRequest(app)
+	// Should be initialized after `setCurrentUserToRequest`
+	setCurrentOrganizationToRequest(app)
 
 	await app.register(authService, { prefix: '/auth' })
 

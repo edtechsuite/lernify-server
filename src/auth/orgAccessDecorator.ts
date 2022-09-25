@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { Pool } from 'pg'
+import { checkOrgPermissions } from '../dal/organizations'
 import { verifyIdToken } from './firebase'
 
 export function decorateOrgPermission(app: FastifyInstance) {
@@ -41,20 +41,6 @@ export function decorateOrgPermission(app: FastifyInstance) {
 			return reply.status(401).send(error)
 		}
 	}
-}
-
-async function checkOrgPermissions(
-	client: Pool,
-	userOuterId: string,
-	orgId: number
-) {
-	const result = await client.query(
-		`SELECT * FROM "usersToOrganizations"
-			WHERE "userId" = (SELECT "id" FROM "users" WHERE "outerId"=$1) AND "organizationId" = $2`,
-		[userOuterId, orgId]
-	)
-
-	return result.rows.length > 0
 }
 
 type RouteConfig = {
