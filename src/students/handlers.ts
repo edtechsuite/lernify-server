@@ -97,7 +97,7 @@ export function initHandlers(app: FastifyInstance) {
 			reply.send(result.rows[0])
 		}
 	)
-	// POST by id
+	// POST
 	app.post<{
 		Body: StudentCreate
 	}>(
@@ -109,6 +109,7 @@ export function initHandlers(app: FastifyInstance) {
 				},
 				body: {
 					type: 'object',
+					required: ['name', 'tags', 'outerId'],
 					properties: {
 						name: { type: 'string' },
 						tags: {
@@ -117,7 +118,6 @@ export function initHandlers(app: FastifyInstance) {
 								type: 'string',
 							},
 						},
-						organization: { type: 'number' },
 						outerId: { type: 'string' },
 					},
 				},

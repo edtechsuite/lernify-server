@@ -8,6 +8,7 @@ export type StudentRecord = {
 	name: string
 	tags: string[]
 	organization: number
+	// Used by the attendances for the backwards compatibility (students were migrated from firebase)
 	outerId: string
 
 	updatedBy: number

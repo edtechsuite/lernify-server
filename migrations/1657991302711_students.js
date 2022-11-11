@@ -9,6 +9,7 @@ exports.up = (pgm) => {
 		id: 'id',
 		name: { type: 'varchar(256)', notNull: true },
 		tags: { type: 'varchar(256)[]', notNull: true, default: '{}' },
+		outerId: { type: 'varchar(1000)', notNull: true, unique: true },
 		organization: {
 			type: 'integer',
 			notNull: true,
