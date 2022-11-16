@@ -30,6 +30,22 @@ export async function createStudentQuery(
 	)
 }
 
+export async function updateStudentQuery(
+	pool: Pool,
+	id: number,
+	data: Omit<
+		StudentRecord,
+		'id' | 'createdAt' | 'updatedAt' | 'organization' | 'outerId'
+	>
+) {
+	return pool.query(
+		`UPDATE "students" SET
+		"name" = $2, "tags" = $3, "updatedBy" = $4
+		where "id" = $1 RETURNING *`,
+		[id, data.name, data.tags, data.updatedBy]
+	)
+}
+
 export async function removeStudentQuery(pool: Pool, id: number) {
 	return pool.query(`DELETE FROM "students" WHERE "id" = $1 RETURNING *`, [id])
 }

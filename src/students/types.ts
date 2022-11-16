@@ -20,3 +20,4 @@ export type StudentCreate = Pick<
 	StudentRecord,
 	'tags' | 'name' | 'organization' | 'outerId'
 >
+export type StudentUpdate = Pick<StudentRecord, 'tags' | 'name'>

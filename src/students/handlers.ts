@@ -4,8 +4,9 @@ import {
 	getStudentByIdQuery,
 	getStudentsByOrg,
 	removeStudentQuery,
+	updateStudentQuery,
 } from '../dal/students'
-import { StudentCreate } from './types'
+import { StudentCreate, StudentUpdate } from './types'
 // import { createOrganization } from './businessLayer/createOrganization'
 // import { removeOrganization } from './businessLayer/removeOrganization'
 // import { StudentCreate } from './types'
@@ -134,6 +135,57 @@ export function initHandlers(app: FastifyInstance) {
 			const result = await createStudentQuery(pool, {
 				...req.body,
 				organization: req.organization.id,
+				updatedBy: req.user.id,
+			})
+
+			reply.send(result.rows[0])
+		}
+	)
+	// PUT
+	app.put<{
+		Body: StudentUpdate
+		Params: {
+			id: number
+		}
+	}>(
+		'/:id',
+		{
+			schema: {
+				headers: {
+					Authorization: { type: 'string' },
+				},
+				params: {
+					type: 'object',
+					properties: {
+						id: { type: 'number' },
+					},
+				},
+				body: {
+					type: 'object',
+					required: ['name', 'tags'],
+					properties: {
+						name: { type: 'string' },
+						tags: {
+							type: 'array',
+							items: {
+								type: 'string',
+							},
+						},
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			const pool = await app.pg.pool
+			const { id } = req.params
+
+			if (!req.user || !req.organization) {
+				return reply.code(403).send('Forbidden')
+			}
+
+			const result = await updateStudentQuery(pool, id, {
+				...req.body,
 				updatedBy: req.user.id,
 			})
 
