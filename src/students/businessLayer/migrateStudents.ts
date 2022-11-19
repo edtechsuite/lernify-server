@@ -13,6 +13,7 @@ export async function migrateStudents(pool: Pool, user: User) {
 		for await (const student of students) {
 			const result = await createStudentQuery(pool, {
 				...student,
+				tags: student.tags || [],
 				name: student.name.trim(),
 				outerId: student.id,
 				organization: org.id,
