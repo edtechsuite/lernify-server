@@ -10,23 +10,16 @@ export function setCurrentUserHook(app: FastifyInstance) {
 			return
 		}
 		app.log.info('preHandler: connecting to database')
-		const client = await app.pg.connect()
+		app.log.info('preHandler: verifying "IdToken"')
+		const decodedToken = await verifyIdToken(idToken)
+		const { uid } = decodedToken
 
-		try {
-			app.log.info('preHandler: verifying "IdToken"')
-			const decodedToken = await verifyIdToken(idToken)
-			const { uid } = decodedToken
+		app.log.info('preHandler: fetching user by "outerId"')
+		const pool = await app.pg.pool
+		const user = await getUserByOuterId(pool, uid)
 
-			app.log.info('preHandler: fetching user by "outerId"')
-			const user = await getUserByOuterId(client, uid)
-
-			app.log.info('preHandler: Current user was successfully set')
-			request.user = user
-			request.decodedIdToken = decodedToken
-		} catch (error) {
-		} finally {
-			app.log.info('preHandler: Closing database connection')
-			client.release()
-		}
+		app.log.info('preHandler: Current user was successfully set')
+		request.user = user
+		request.decodedIdToken = decodedToken
 	})
 }
