@@ -2,7 +2,9 @@ import 'fastify'
 
 declare module 'fastify' {
 	interface FastifyInstance {
-		verifyJWT: verifyJWTFunc
+		verifyJWT: DecoratorFunc
+		ensureUserExists: DecoratorFunc
+		ensureUserIsSystemAdmin: DecoratorFunc
 		getAuthSchema: () => FastifySchema
 		verifyOrgAccess: (
 			request: FastifyRequest<RouteConfig>,
@@ -11,6 +13,6 @@ declare module 'fastify' {
 	}
 }
 
-interface verifyJWTFunc {
+interface DecoratorFunc {
 	(request: FastifyRequest, reply: FastifyReply, done: () => void): string
 }

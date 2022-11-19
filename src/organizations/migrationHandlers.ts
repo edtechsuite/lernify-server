@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify'
-import { getDecodedToken } from '../utils/request-context'
 import { migrateOrganizations } from './businessLayer/migrateOrganizations'
 
 export function initMigrationHandlers(app: FastifyInstance) {
@@ -11,12 +10,14 @@ export function initMigrationHandlers(app: FastifyInstance) {
 				Authorization: { type: 'string' },
 			},
 		},
-		preHandler: [app.verifyJWT],
+		preHandler: [app.ensureUserIsSystemAdmin],
 		handler: async (req, reply) => {
-			const decodedToken = getDecodedToken(req)
+			if (!req.user) {
+				return reply.status(401).send('Unauthorized')
+			}
 
-			const { email, uid } = decodedToken
-			req.log.info(`Migrating organizations. Initiator: ${uid}`)
+			const { id, name } = req.user
+			req.log.info(`Migrating organizations. Initiator: ${name} (${id})`)
 			const result = await migrateOrganizations(app)
 
 			req.log.info(

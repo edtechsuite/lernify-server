@@ -2,6 +2,7 @@ import { FastifyRequest } from 'fastify'
 import { DecodedIdToken } from 'firebase-admin/auth'
 
 export function getDecodedToken(req: FastifyRequest) {
+	req.log.warn(`DecodedIdToken is deprecated. Use "request.decodedIdToken"`)
 	if (req.requestContext.get('decodedIdToken') === undefined) {
 		throw new Error('Decoded id token is not set')
 	}

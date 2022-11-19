@@ -1,10 +1,10 @@
 import fastify from 'fastify'
-import fastifyAuth from '@fastify/auth'
 import { fastifyRequestContextPlugin } from '@fastify/request-context'
 import { cert, initializeApp } from 'firebase-admin/app'
 import { getConfig, isProduction, PORT } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
+import studentsService from './students'
 import usersService from './users'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
@@ -12,6 +12,7 @@ import { decorateWithAuth } from './auth/authDecorators'
 import { decorateOrgPermission } from './auth/orgAccessDecorator'
 import { databaseConnector } from './databaseConnector'
 import { setCurrentUserToRequest } from './users/setCurrentUserToRequest'
+import { setCurrentOrganizationToRequest } from './organizations/setCurrentOrganizationToRequest'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
@@ -36,6 +37,7 @@ export async function App() {
 		},
 		// ajv: {},
 	})
+	app.log.info('Initializing an application')
 
 	app.register(fastifyRequestContextPlugin, {
 		hook: 'preHandler',
@@ -54,18 +56,21 @@ export async function App() {
 		app.log.info('Database connection successful')
 	})
 	app.register(require('@fastify/cors'))
-	app.register(fastifyAuth)
 
 	// These decorators should be initialized before other handlers
+	// TODO: use plugin
 	decorateWithAuth(app)
 	decorateOrgPermission(app)
 	setCurrentUserToRequest(app)
+	// Should be initialized after `setCurrentUserToRequest`
+	setCurrentOrganizationToRequest(app)
 
 	await app.register(authService, { prefix: '/auth' })
 
 	await app.register(usersService, { prefix: '/users' })
 
 	await app.register(organizationsService, { prefix: '/organizations' })
+	await app.register(studentsService, { prefix: '/students' })
 
 	app.after(routes)
 

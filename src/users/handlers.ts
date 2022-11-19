@@ -248,6 +248,7 @@ export function initHandlers(app: FastifyInstance) {
 			preHandler: [app.verifyJWT, app.verifyOrgAccess],
 		},
 		async (req, reply) => {
+			// TODO: ensure admin rights
 			const decodedToken = getDecodedToken(req)
 			const client = await app.pg.connect()
 			const { email, role, orgId } = req.body

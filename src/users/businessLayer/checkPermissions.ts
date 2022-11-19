@@ -4,6 +4,7 @@ import { PoolClient } from 'pg'
 export async function checkPermissions(
 	client: PoolClient,
 	userOuterId: string,
+	// TODO: number
 	orgId: string
 ) {
 	const result = await client.query(
