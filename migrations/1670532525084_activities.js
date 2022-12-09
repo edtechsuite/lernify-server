@@ -19,6 +19,11 @@ exports.up = (pgm) => {
 			notNull: true,
 			references: 'organizations(id)',
 		},
+		deleted: {
+			type: 'boolean',
+			notNull: true,
+			default: 'false',
+		},
 		...getCommonColumns(pgm),
 	})
 }
