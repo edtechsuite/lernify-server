@@ -5,6 +5,7 @@ import { getConfig, isProduction, PORT } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
 import studentsService from './students'
+import activitiesService from './activities'
 import usersService from './users'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
@@ -71,6 +72,7 @@ export async function App() {
 
 	await app.register(organizationsService, { prefix: '/organizations' })
 	await app.register(studentsService, { prefix: '/students' })
+	await app.register(activitiesService, { prefix: '/activities' })
 
 	app.after(routes)
 
