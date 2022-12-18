@@ -1,189 +1,352 @@
 import { FastifyInstance } from 'fastify'
-// import {
-// 	createStudentQuery,
-// 	getStudentByIdQuery,
-// 	getStudentsByOrg,
-// 	removeStudentQuery,
-// 	updateStudentQuery,
-// } from '../dal/students'
-// import { StudentCreate, StudentUpdate } from './types'
-// import { createOrganization } from './businessLayer/createOrganization'
-// import { removeOrganization } from './businessLayer/removeOrganization'
-// import { StudentCreate } from './types'
+import { OrgHeaderEnsured } from '../auth/types'
+import { prisma } from '../utils/prisma'
+import { ActivityUpdate } from './types'
 
 export function initHandlers(app: FastifyInstance) {
-	// // GET /all by organization
-	// app.route<{
-	// 	Params: {
-	// 		orgId: number
-	// 	}
-	// }>({
-	// 	method: 'GET',
-	// 	url: `/byOrganization/:orgId`,
-	// 	schema: {
-	// 		params: {
-	// 			type: 'object',
-	// 			properties: {
-	// 				orgId: { type: 'string' },
-	// 			},
-	// 		},
-	// 	},
-	// 	preHandler: [app.verifyOrgAccess],
-	// 	handler: async (req, reply) => {
-	// 		const pool = await app.pg.pool
-	// 		const result = await getStudentsByOrg(pool, req.params.orgId)
-	// 		reply.send(result.rows)
-	// 	},
-	// })
-	// // GET by id
-	// app.get<{
-	// 	Params: {
-	// 		id: number
-	// 	}
-	// }>(
-	// 	'/:id',
-	// 	{
-	// 		schema: {
-	// 			headers: {
-	// 				Authorization: { type: 'string' },
-	// 			},
-	// 			params: {
-	// 				type: 'object',
-	// 				properties: {
-	// 					id: { type: 'number' },
-	// 				},
-	// 			},
-	// 		},
-	// 		preHandler: [app.verifyOrgAccess],
-	// 	},
-	// 	async (req, reply) => {
-	// 		const { id } = req.params
-	// 		const pool = await app.pg.pool
-	// 		const result = await getStudentByIdQuery(pool, id)
-	// 		if (result.rows.length === 0) {
-	// 			return reply.code(404).send('Not found')
-	// 		}
-	// 		reply.send(result.rows[0])
-	// 	}
-	// )
-	// // DELETE by id
-	// app.delete<{
-	// 	Params: {
-	// 		id: number
-	// 	}
-	// }>(
-	// 	'/:id',
-	// 	{
-	// 		schema: {
-	// 			headers: {
-	// 				Authorization: { type: 'string' },
-	// 			},
-	// 			params: {
-	// 				type: 'object',
-	// 				properties: {
-	// 					id: { type: 'number' },
-	// 				},
-	// 			},
-	// 		},
-	// 		preHandler: [app.verifyOrgAccess],
-	// 	},
-	// 	async (req, reply) => {
-	// 		// TODO: remove student to group associations
-	// 		const { id } = req.params
-	// 		const pool = await app.pg.pool
-	// 		const result = await removeStudentQuery(pool, id)
-	// 		if (result.rows.length === 0) {
-	// 			return reply.code(404).send('Not found')
-	// 		}
-	// 		reply.send(result.rows[0])
-	// 	}
-	// )
-	// // POST
-	// app.post<{
-	// 	Body: StudentCreate
-	// }>(
-	// 	'/',
-	// 	{
-	// 		schema: {
-	// 			headers: {
-	// 				Authorization: { type: 'string' },
-	// 			},
-	// 			body: {
-	// 				type: 'object',
-	// 				required: ['name', 'tags', 'outerId'],
-	// 				properties: {
-	// 					name: { type: 'string' },
-	// 					tags: {
-	// 						type: 'array',
-	// 						items: {
-	// 							type: 'string',
-	// 						},
-	// 					},
-	// 					outerId: { type: 'string' },
-	// 				},
-	// 			},
-	// 		},
-	// 		preHandler: [app.verifyOrgAccess],
-	// 	},
-	// 	async (req, reply) => {
-	// 		const pool = await app.pg.pool
-	// 		if (!req.user || !req.organization) {
-	// 			return reply.code(403).send('Forbidden')
-	// 		}
-	// 		const result = await createStudentQuery(pool, {
-	// 			...req.body,
-	// 			organization: req.organization.id,
-	// 			updatedBy: req.user.id,
-	// 		})
-	// 		reply.send(result.rows[0])
-	// 	}
-	// )
-	// // PUT
-	// app.put<{
-	// 	Body: StudentUpdate
-	// 	Params: {
-	// 		id: number
-	// 	}
-	// }>(
-	// 	'/:id',
-	// 	{
-	// 		schema: {
-	// 			headers: {
-	// 				Authorization: { type: 'string' },
-	// 			},
-	// 			params: {
-	// 				type: 'object',
-	// 				properties: {
-	// 					id: { type: 'number' },
-	// 				},
-	// 			},
-	// 			body: {
-	// 				type: 'object',
-	// 				required: ['name', 'tags'],
-	// 				properties: {
-	// 					name: { type: 'string' },
-	// 					tags: {
-	// 						type: 'array',
-	// 						items: {
-	// 							type: 'string',
-	// 						},
-	// 					},
-	// 				},
-	// 			},
-	// 		},
-	// 		preHandler: [app.verifyOrgAccess],
-	// 	},
-	// 	async (req, reply) => {
-	// 		const pool = await app.pg.pool
-	// 		const { id } = req.params
-	// 		if (!req.user || !req.organization) {
-	// 			return reply.code(403).send('Forbidden')
-	// 		}
-	// 		const result = await updateStudentQuery(pool, id, {
-	// 			...req.body,
-	// 			updatedBy: req.user.id,
-	// 		})
-	// 		reply.send(result.rows[0])
-	// 	}
-	// )
+	// GET
+	app.route<{
+		Params: {
+			id: string
+		}
+		Headers: OrgHeaderEnsured
+	}>({
+		method: 'GET',
+		url: `/:id`,
+		schema: {
+			params: {
+				type: 'object',
+				properties: {
+					id: { type: 'string' },
+				},
+			},
+		},
+		preHandler: [app.verifyOrgAccess],
+		handler: async (req) => {
+			return await prisma.activities.findFirst({
+				where: {
+					id: parseInt(req.params.id, 10),
+					organizationId: req.organization!.id,
+				},
+			})
+		},
+	})
+
+	// GET by params
+	app.route<{
+		Querystring: {
+			performerId: string
+		}
+		Headers: OrgHeaderEnsured
+	}>({
+		method: 'GET',
+		url: `/`,
+		schema: {
+			querystring: {
+				type: 'object',
+				properties: {
+					performerId: { type: 'string' },
+				},
+			},
+		},
+		preHandler: [app.verifyOrgAccess],
+		handler: async (req) => {
+			const result = await prisma.activities.findMany({
+				where: {
+					organizationId: req.organization!.id,
+					performerId: req.query.performerId
+						? parseInt(req.query.performerId, 10)
+						: undefined,
+				},
+			})
+
+			return result
+		},
+	})
+
+	// GET by participant
+	app.route<{
+		Params: {
+			participantId: string
+		}
+		Querystring: {
+			date?: string
+		}
+		Headers: OrgHeaderEnsured
+	}>({
+		method: 'GET',
+		url: `/byParticipant/:participantId`,
+		schema: {
+			params: {
+				type: 'object',
+				properties: {
+					participantId: { type: 'string' },
+				},
+			},
+			querystring: {
+				type: 'object',
+				properties: {
+					date: { type: 'string' },
+				},
+			},
+		},
+		preHandler: [app.verifyOrgAccess],
+		handler: async (req, reply) => {
+			if (!req.organization) {
+				return reply.status(401).send('Unauthorized')
+			}
+			const participant = await prisma.students.findFirstOrThrow({
+				where: {
+					organization: req.organization.id,
+					id: parseInt(req.params.participantId, 10),
+				},
+			})
+
+			return await prisma.activities.findMany({
+				where: {
+					organizationId: req.organization.id,
+					studentsToActivities: {
+						some: {
+							participantId: participant.id,
+							startDate: {
+								lte: req.query.date ? new Date(req.query.date) : undefined,
+							},
+							...(req.query.date
+								? {
+										OR: [
+											{
+												endDate: null,
+											},
+											{
+												endDate: {
+													gte: new Date(req.query.date),
+												},
+											},
+										],
+								  }
+								: {}),
+						},
+					},
+				},
+			})
+		},
+	})
+
+	// PUT
+	app.put<{
+		Body: ActivityUpdate
+		Params: {
+			id: string
+		}
+		Headers: OrgHeaderEnsured
+	}>(
+		'/:id',
+		{
+			schema: {
+				params: {
+					type: 'object',
+					properties: {
+						id: { type: 'string' },
+					},
+				},
+				body: {
+					type: 'object',
+					required: ['name', 'performerId'],
+					properties: {
+						name: { type: 'string' },
+						performerId: { type: 'number' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req) => {
+			const data = await prisma.activities.findFirstOrThrow({
+				where: {
+					organizationId: req.organization!.id,
+					id: parseInt(req.params.id, 10),
+				},
+			})
+			const result = await prisma.activities.update({
+				data: req.body,
+				where: {
+					id: data.id,
+				},
+				select: returnActivity,
+			})
+
+			return result
+		}
+	)
+
+	// Delete
+	app.delete<{
+		Params: {
+			id: string
+		}
+		Headers: OrgHeaderEnsured
+	}>(
+		'/:id',
+		{
+			schema: {
+				params: {
+					type: 'object',
+					properties: {
+						id: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req) => {
+			const activityId = parseInt(req.params.id, 10)
+			const data = await prisma.activities.findFirstOrThrow({
+				where: {
+					organizationId: req.organization!.id,
+					id: activityId,
+				},
+			})
+
+			await prisma.studentsToActivities.updateMany({
+				where: {
+					activityId: data.id,
+					endDate: null,
+				},
+				data: {
+					endDate: new Date(),
+				},
+			})
+
+			const result = await prisma.activities.update({
+				where: {
+					id: data.id,
+				},
+				data: {
+					deleted: true,
+				},
+				select: returnActivity,
+			})
+
+			return result
+		}
+	)
+
+	// Assign participant
+	app.post<{
+		Params: {
+			activityId: string
+			participantId: string
+		}
+		Headers: OrgHeaderEnsured
+	}>(
+		'/:activityId/participant/:participantId',
+		{
+			schema: {
+				params: {
+					type: 'object',
+					properties: {
+						activityId: { type: 'string' },
+						participantId: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			if (!req.user) {
+				return reply.status(401).send('Unauthorized')
+			}
+
+			const activityId = parseInt(req.params.activityId, 10)
+			const participantId = parseInt(req.params.participantId, 10)
+			const activity = await prisma.activities.findFirstOrThrow({
+				where: {
+					organizationId: req.organization!.id,
+					id: activityId,
+				},
+			})
+			const participant = await prisma.students.findFirstOrThrow({
+				where: {
+					organization: req.organization!.id,
+					id: participantId,
+				},
+			})
+
+			await prisma.studentsToActivities.create({
+				data: {
+					participantId: participant.id,
+					activityId: activity.id,
+					startDate: new Date(),
+					endDate: null,
+					updatedBy: req.user?.id,
+				},
+			})
+
+			reply.status(201).send('ok')
+		}
+	)
+
+	// Unassign participant
+	app.delete<{
+		Params: {
+			activityId: string
+			participantId: string
+		}
+		Headers: OrgHeaderEnsured
+	}>(
+		'/:activityId/participant/:participantId',
+		{
+			schema: {
+				params: {
+					type: 'object',
+					properties: {
+						activityId: { type: 'string' },
+						participantId: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			const activityId = parseInt(req.params.activityId, 10)
+			const participantId = parseInt(req.params.participantId, 10)
+			const activity = await prisma.activities.findFirstOrThrow({
+				where: {
+					organizationId: req.organization!.id,
+					id: activityId,
+				},
+			})
+			const participant = await prisma.students.findFirstOrThrow({
+				where: {
+					organization: req.organization!.id,
+					id: participantId,
+				},
+			})
+
+			await prisma.studentsToActivities.updateMany({
+				where: {
+					participantId: participant.id,
+					activityId: activity.id,
+					endDate: null,
+				},
+				data: {
+					endDate: new Date(),
+				},
+			})
+
+			reply.status(200).send('ok')
+		}
+	)
+}
+
+const returnActivity = {
+	id: true,
+	name: true,
+	performerId: true,
+	type: true,
+	outerId: true,
+	deleted: true,
+	updatedBy: true,
+	createdAt: true,
+	updatedAt: true,
 }

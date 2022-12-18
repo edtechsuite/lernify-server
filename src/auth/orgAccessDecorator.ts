@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { checkOrgPermissions } from '../dal/organizations'
 import { verifyIdToken } from './firebase'
+import { OrgHeader } from './types'
 
 export function decorateOrgPermission(app: FastifyInstance) {
 	app.decorate('verifyOrgAccess', verifyOrgAccess)
@@ -16,23 +17,30 @@ export function decorateOrgPermission(app: FastifyInstance) {
 			return reply.status(401).send('Unauthorized')
 		}
 
-		// Trying to get `orgId` from request whatever it is
-		const orgId =
-			request.body?.orgId || request.params?.orgId || request.query?.orgId
+		// Trying to get `orgKey` from request whatever it is
+		const orgKey =
+			request.headers['x-organization'] ||
+			request.body?.orgKey ||
+			request.params?.orgKey ||
+			request.query?.orgKey
 
-		if (!orgId) {
+		if (!orgKey) {
 			return reply
 				.status(400)
 				.send(
-					`"orgId" property is required in the request body, params or query`
+					`"orgKey" property is required in the request body, params, query or header ("x-organization")`
 				)
 		}
 
-		const pool = await app.pg.pool
+		const pool = app.pg.pool
 
 		try {
 			const decodedToken = await verifyIdToken(idToken)
-			const hasAccess = await checkOrgPermissions(pool, decodedToken.uid, orgId)
+			const hasAccess = await checkOrgPermissions(
+				pool,
+				decodedToken.uid,
+				orgKey
+			)
 			if (!hasAccess) {
 				return reply.status(403).send('Forbidden')
 			}
@@ -45,12 +53,13 @@ export function decorateOrgPermission(app: FastifyInstance) {
 
 type RouteConfig = {
 	Body?: {
-		orgId?: number
+		orgKey?: string
 	}
 	Params?: {
-		orgId?: number
+		orgKey?: string
 	}
 	Querystring?: {
-		orgId?: number
+		orgKey?: string
 	}
+	Headers: OrgHeader
 }

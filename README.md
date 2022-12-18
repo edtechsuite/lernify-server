@@ -8,6 +8,7 @@
 - Add `GOOGLE_APPLICATION_CREDENTIALS=".\service-account-key-secret.json"` to the `.env` file
 - Run `npm install` to install project dependency from the CLI
 - Run migrations `npm run migrate up`
+- Run `npm run prisma.generate` to generate Prisma typings
 - Run `npm run start` to start project from the CLI
 
 ## Before commit
@@ -59,7 +60,7 @@ You can find `PROJECT_ID`, `CLIENT_EMAIL`, `PRIVATE_KEY` in the Firebase `servic
 
 To create migration script run `npm run migrate.create my migration script` where `my migration script` is short description of the migration. It will create file xxx_my-migration-script.js in migrations folder.
 
-To migrate database run `npm run migrate.up`
+To migrate database run `npm run migrate.up`, `npm run prisma.pull` and `npm run prisma.generate`
 
 ## Tmp
 

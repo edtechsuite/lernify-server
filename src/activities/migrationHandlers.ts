@@ -23,7 +23,7 @@ export function initMigrationHandlers(app: FastifyInstance) {
 				req.log.info(`Migrating groups. Initiator: ${name} (${id})`)
 				const result = await migrateGroups(pool, req.user)
 
-				const message = `Groups migration finished. Migrated ${result} groups.`
+				const message = `Groups migration finished. Migrated ${result.groupsCount} groups and assigned ${result.studentsToGroupsCount} students`
 
 				req.log.info(message)
 

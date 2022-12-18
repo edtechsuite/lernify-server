@@ -1,18 +1,22 @@
 import { FastifyInstance, FastifyRequest } from 'fastify'
+import { OrgHeader } from '../auth/types'
 import {
 	checkOrgPermissions,
-	getOrganizationByIdQuery,
+	getOrganizationByKeyQuery,
 } from '../dal/organizations'
 
 export function setCurrentOrganizationToRequest(app: FastifyInstance) {
 	app.decorateRequest('organization', null)
 
 	app.addHook('preHandler', async (request: FastifyRequest<RouteConfig>) => {
-		// Trying to get `orgId` from request whatever it is
-		const orgId =
-			request.body?.orgId || request.params?.orgId || request.query?.orgId
+		// Trying to get `orgKey` from request whatever it is
+		const orgKey =
+			request.headers['x-organization'] ||
+			request.body?.orgKey ||
+			request.params?.orgKey ||
+			request.query?.orgKey
 
-		if (!orgId) {
+		if (!orgKey) {
 			// No organization
 			return
 		}
@@ -23,24 +27,25 @@ export function setCurrentOrganizationToRequest(app: FastifyInstance) {
 			return
 		}
 		const pool = await app.pg.pool
-		const hasAccess = await checkOrgPermissions(pool, user.outerId, orgId)
+		const hasAccess = await checkOrgPermissions(pool, user.outerId, orgKey)
 		if (!hasAccess) {
 			// User doesn't have access to this organization
 			return
 		}
-		const result = await getOrganizationByIdQuery(pool, orgId)
+		const result = await getOrganizationByKeyQuery(pool, orgKey)
 		request.organization = result.rows[0]
 	})
 }
 
 type RouteConfig = {
 	Body?: {
-		orgId?: number
+		orgKey?: string
 	}
 	Params?: {
-		orgId?: number
+		orgKey?: string
 	}
 	Querystring?: {
-		orgId?: number
+		orgKey?: string
 	}
+	Headers: OrgHeader
 }

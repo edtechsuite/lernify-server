@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model activities {
+  id                   Int                    @id @default(autoincrement())
+  type                 String                 @db.VarChar(256)
+  performerId          Int?
+  name                 String                 @db.VarChar(256)
+  outerId              String                 @unique @db.VarChar(1000)
+  organizationId       Int
+  deleted              Boolean                @default(false)
+  createdAt            DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime               @default(now()) @db.Timestamp(6)
+  updatedBy            Int
+  organization         organizations          @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  performer            users?                 @relation("activities_performerIdTousers", fields: [performerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByUser        users                  @relation("activities_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  studentsToActivities studentsToActivities[]
+}
+
+model invites {
+  id             Int           @id @default(autoincrement())
+  email          String        @unique @db.VarChar(1000)
+  token          String        @db.VarChar(100)
+  role           String        @db.VarChar(100)
+  organization   Int
+  dueTo          DateTime      @db.Timestamp(6)
+  createdAt      DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime      @default(now()) @db.Timestamp(6)
+  updatedBy      Int
+  organizations  organizations @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByUsers users         @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model organizations {
+  id                                   Int                    @id @default(autoincrement())
+  key                                  String                 @unique @db.VarChar(1000)
+  name                                 String                 @db.VarChar(1000)
+  owner                                Int
+  createdAt                            DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt                            DateTime               @default(now()) @db.Timestamp(6)
+  updatedBy                            Int
+  deleted                              Boolean                @default(false)
+  activities                           activities[]
+  invites                              invites[]
+  users_organizations_ownerTousers     users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_organizations_updatedByTousers users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students                             students[]
+  usersToOrganizations                 usersToOrganizations[]
+}
+
+model pgmigrations {
+  id     Int      @id @default(autoincrement())
+  name   String   @db.VarChar(255)
+  run_on DateTime @db.Timestamp(6)
+}
+
+model students {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(256)
+  tags                 String[]               @default([]) @db.VarChar(256)
+  outerId              String                 @unique @db.VarChar(1000)
+  organization         Int
+  createdAt            DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime               @default(now()) @db.Timestamp(6)
+  updatedBy            Int
+  organizationRecord   organizations          @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                users                  @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  studentsToActivities studentsToActivities[]
+}
+
+model users {
+  id                                                         Int                    @id @default(autoincrement())
+  name                                                       String                 @db.VarChar(1000)
+  email                                                      String                 @unique @db.VarChar(1000)
+  outerId                                                    String                 @unique @db.VarChar(1000)
+  createdAt                                                  DateTime               @default(now()) @db.Timestamp(6)
+  systemRole                                                 String?                @db.VarChar(100)
+  activities_activities_performerIdTousers                   activities[]           @relation("activities_performerIdTousers")
+  activities_activities_updatedByTousers                     activities[]           @relation("activities_updatedByTousers")
+  invites                                                    invites[]
+  organizations_organizations_ownerTousers                   organizations[]        @relation("organizations_ownerTousers")
+  organizations_organizations_updatedByTousers               organizations[]        @relation("organizations_updatedByTousers")
+  students                                                   students[]
+  studentsToActivities                                       studentsToActivities[]
+  usersToOrganizations_usersToOrganizations_updatedByTousers usersToOrganizations[] @relation("usersToOrganizations_updatedByTousers")
+  usersToOrganizations_usersToOrganizations_userIdTousers    usersToOrganizations[] @relation("usersToOrganizations_userIdTousers")
+}
+
+model usersToOrganizations {
+  id                                          Int           @id @default(autoincrement())
+  userId                                      Int
+  organizationId                              Int
+  role                                        String        @db.VarChar(100)
+  createdAt                                   DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt                                   DateTime      @default(now()) @db.Timestamp(6)
+  updatedBy                                   Int
+  organizations                               organizations @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_usersToOrganizations_updatedByTousers users         @relation("usersToOrganizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_usersToOrganizations_userIdTousers    users         @relation("usersToOrganizations_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model studentsToActivities {
+  id             Int         @id @default(autoincrement())
+  activityId     Int?
+  participantId  Int?
+  startDate      DateTime    @default(now()) @db.Timestamp(6)
+  endDate        DateTime?   @default(now()) @db.Timestamp(6)
+  createdAt      DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime    @default(now()) @db.Timestamp(6)
+  updatedBy      Int
+  activity       activities? @relation(fields: [activityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  participant    students?   @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByUsers users       @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}

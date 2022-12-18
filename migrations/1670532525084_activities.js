@@ -8,13 +8,13 @@ exports.up = (pgm) => {
 	pgm.createTable(tableName, {
 		id: 'id',
 		type: { type: 'varchar(256)', notNull: true },
-		performer: {
+		performerId: {
 			type: 'integer',
 			references: 'users(id)',
 		},
 		name: { type: 'varchar(256)', notNull: true },
 		outerId: { type: 'varchar(1000)', notNull: true, unique: true },
-		organization: {
+		organizationId: {
 			type: 'integer',
 			notNull: true,
 			references: 'organizations(id)',

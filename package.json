@@ -12,6 +12,8 @@
 		"provision": "ts-node ./src/provisioning/cli.ts",
 		"docker.build": "docker build -t edtechsuite/attendance-manager:latest .",
 		"docker.run": "docker-compose up --remove-orphans",
+		"prisma.pull": "prisma db pull",
+		"prisma.generate": "prisma generate",
 		"test": "jest"
 	},
 	"repository": {
@@ -28,6 +30,7 @@
 		"@fastify/cors": "^7.0.0",
 		"@fastify/postgres": "^4.0.0",
 		"@fastify/request-context": "^3.0.0",
+		"@prisma/client": "^4.7.1",
 		"@tsconfig/node17": "^1.0.0",
 		"@types/node": "^17.0.23",
 		"@types/pg": "^8.6.5",
@@ -39,6 +42,7 @@
 		"nanoid": "^3.3.4",
 		"node-pg-migrate": "^6.2.1",
 		"pg": "^8.7.3",
+		"prisma": "^4.7.1",
 		"prompts": "^2.4.2",
 		"typescript": "^4.6.3",
 		"winston": "^3.6.0"

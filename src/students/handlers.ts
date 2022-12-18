@@ -6,10 +6,8 @@ import {
 	removeStudentQuery,
 	updateStudentQuery,
 } from '../dal/students'
+import { prisma } from '../utils/prisma'
 import { StudentCreate, StudentUpdate } from './types'
-// import { createOrganization } from './businessLayer/createOrganization'
-// import { removeOrganization } from './businessLayer/removeOrganization'
-// import { StudentCreate } from './types'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET /all by organization
@@ -35,6 +33,72 @@ export function initHandlers(app: FastifyInstance) {
 			reply.send(result.rows)
 		},
 	})
+
+	// GET by activity
+	app.route<{
+		Params: {
+			activity: string
+		}
+		Querystring: {
+			startDate?: string
+			endDate?: string
+		}
+	}>({
+		method: 'GET',
+		url: `/byActivity/:activity`,
+		schema: {
+			params: {
+				type: 'object',
+				properties: {
+					activity: { type: 'string' },
+				},
+				required: ['activity'],
+			},
+			querystring: {
+				type: 'object',
+				properties: {
+					startDate: { type: 'string' },
+					endDate: { type: 'string' },
+				},
+			},
+		},
+		preHandler: [app.verifyOrgAccess],
+		handler: async (req) => {
+			const result = await prisma.studentsToActivities.findMany({
+				where: {
+					OR: [
+						{
+							endDate: null,
+						},
+						{
+							endDate: {
+								gte: req.query.endDate
+									? new Date(req.query.endDate)
+									: undefined,
+							},
+						},
+					],
+					activityId: parseInt(req.params.activity, 10),
+					startDate: {
+						lte: req.query.startDate
+							? new Date(req.query.startDate)
+							: undefined,
+					},
+					activity: {
+						is: {
+							organizationId: req.organization?.id
+								? req.organization.id
+								: undefined,
+						},
+					},
+				},
+				include: { participant: true },
+			})
+
+			return result.map((item) => item.participant)
+		},
+	})
+
 	// GET by id
 	app.get<{
 		Params: {
