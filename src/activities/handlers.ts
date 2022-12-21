@@ -1,7 +1,8 @@
 import { FastifyInstance } from 'fastify'
+import { nanoid } from 'nanoid'
 import { OrgHeaderEnsured } from '../auth/types'
 import { prisma } from '../utils/prisma'
-import { ActivityUpdate } from './types'
+import { ActivityCreate, ActivityUpdate } from './types'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET
@@ -57,6 +58,7 @@ export function initHandlers(app: FastifyInstance) {
 					performerId: req.query.performerId
 						? parseInt(req.query.performerId, 10)
 						: undefined,
+					deleted: false,
 				},
 			})
 
@@ -104,6 +106,7 @@ export function initHandlers(app: FastifyInstance) {
 
 			return await prisma.activities.findMany({
 				where: {
+					deleted: false,
 					organizationId: req.organization.id,
 					studentsToActivities: {
 						some: {
@@ -132,7 +135,39 @@ export function initHandlers(app: FastifyInstance) {
 		},
 	})
 
-	// PUT
+	app.post<{
+		Body: ActivityCreate
+		Headers: OrgHeaderEnsured
+	}>(
+		'/',
+		{
+			schema: {
+				body: {
+					type: 'object',
+					required: ['name', 'performerId'],
+					properties: {
+						name: { type: 'string' },
+						performerId: { type: 'number' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req) => {
+			const result = await prisma.activities.create({
+				data: {
+					...req.body,
+					outerId: nanoid(),
+					organizationId: req.organization!.id,
+					updatedBy: req.user!.id,
+				},
+				select: returnActivity,
+			})
+
+			return result
+		}
+	)
+
 	app.put<{
 		Body: ActivityUpdate
 		Params: {
@@ -179,7 +214,6 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
-	// Delete
 	app.delete<{
 		Params: {
 			id: string

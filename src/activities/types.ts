@@ -26,3 +26,7 @@ export type ActivityRecord = {
 }
 
 export type ActivityUpdate = Pick<ActivityRecord, 'performerId' | 'name'>
+export type ActivityCreate = Pick<
+	ActivityRecord,
+	'performerId' | 'name' | 'type'
+>

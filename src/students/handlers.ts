@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify'
+import { unassignParticipantFromAllActivities } from '../activities/businessLayer/participation'
 import {
 	createStudentQuery,
 	getStudentByIdQuery,
 	getStudentsByOrg,
-	removeStudentQuery,
 	updateStudentQuery,
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
@@ -28,7 +28,7 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		preHandler: [app.verifyOrgAccess],
 		handler: async (req, reply) => {
-			const pool = await app.pg.pool
+			const pool = app.pg.pool
 			const result = await getStudentsByOrg(pool, req.params.orgId)
 			reply.send(result.rows)
 		},
@@ -130,7 +130,7 @@ export function initHandlers(app: FastifyInstance) {
 			reply.send(result.rows[0])
 		}
 	)
-	// DELETE by id
+
 	app.delete<{
 		Params: {
 			id: number
@@ -139,9 +139,6 @@ export function initHandlers(app: FastifyInstance) {
 		'/:id',
 		{
 			schema: {
-				headers: {
-					Authorization: { type: 'string' },
-				},
 				params: {
 					type: 'object',
 					properties: {
@@ -152,14 +149,20 @@ export function initHandlers(app: FastifyInstance) {
 			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
-			// TODO: remove student to group associations
 			const { id } = req.params
-			const pool = await app.pg.pool
-			const result = await removeStudentQuery(pool, id)
-			if (result.rows.length === 0) {
-				return reply.code(404).send('Not found')
-			}
-			reply.send(result.rows[0])
+			await unassignParticipantFromAllActivities(req.organization!.id, id)
+			const result = await prisma.students.update({
+				where: {
+					id,
+				},
+				data: {
+					deleted: true,
+					updatedBy: req.user!.id,
+					updatedAt: new Date(),
+				},
+			})
+
+			reply.send(result)
 		}
 	)
 	// POST
@@ -196,6 +199,7 @@ export function initHandlers(app: FastifyInstance) {
 				return reply.code(403).send('Forbidden')
 			}
 
+			// TODO: should throw error if student with such `outerId` already exists
 			const result = await createStudentQuery(pool, {
 				...req.body,
 				organization: req.organization.id,

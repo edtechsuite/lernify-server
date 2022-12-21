@@ -70,6 +70,7 @@ model students {
   createdAt            DateTime               @default(now()) @db.Timestamp(6)
   updatedAt            DateTime               @default(now()) @db.Timestamp(6)
   updatedBy            Int
+  deleted              Boolean                @default(false)
   organizationRecord   organizations          @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users                users                  @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   studentsToActivities studentsToActivities[]

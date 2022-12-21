@@ -6,6 +6,18 @@ import { updateUser } from './businessLayer/editUser'
 import { confirmInvitation, inviteUser } from './businessLayer/invite'
 
 export function initHandlers(app: FastifyInstance) {
+	// GET me
+	app.get(
+		'/me',
+		{
+			preHandler: [app.verifyJWT],
+		},
+		async (req, reply) => {
+			reply.send(req.user)
+		}
+	)
+
+	// TODO: probably bag with wrong JOIN (duplicated records)
 	// TODO: should return user by id
 	// GET /
 	app.get<{

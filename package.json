@@ -9,7 +9,6 @@
 		"migrate.create": "node-pg-migrate create",
 		"migrate.up": "node-pg-migrate up --no-reject-unauthorized",
 		"migrate.up.noSSL": "node-pg-migrate up",
-		"provision": "ts-node ./src/provisioning/cli.ts",
 		"docker.build": "docker build -t edtechsuite/attendance-manager:latest .",
 		"docker.run": "docker-compose up --remove-orphans",
 		"prisma.pull": "prisma db pull",
