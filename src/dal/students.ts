@@ -25,7 +25,7 @@ export async function createStudentQuery(
 			"name", "tags", "organization", "updatedBy", "outerId"
 		) VALUES (
 			$1, $2, $3, $4, $5
-		) ON CONFLICT DO NOTHING RETURNING *`,
+		) RETURNING *`,
 		[data.name, data.tags, data.organization, data.updatedBy, data.outerId]
 	)
 }

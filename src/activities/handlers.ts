@@ -147,7 +147,16 @@ export function initHandlers(app: FastifyInstance) {
 					required: ['name', 'performerId'],
 					properties: {
 						name: { type: 'string' },
-						performerId: { type: 'number' },
+						performerId: {
+							anyOf: [
+								{
+									type: 'null',
+								},
+								{
+									type: 'number',
+								},
+							],
+						},
 					},
 				},
 			},

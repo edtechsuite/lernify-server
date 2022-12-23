@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { unassignParticipantFromAllActivities } from '../activities/businessLayer/participation'
+import { isDatabaseError } from '../dal/databaseError'
 import {
 	createStudentQuery,
 	getStudentByIdQuery,
@@ -165,7 +166,7 @@ export function initHandlers(app: FastifyInstance) {
 			reply.send(result)
 		}
 	)
-	// POST
+
 	app.post<{
 		Body: StudentCreate
 	}>(
@@ -193,20 +194,30 @@ export function initHandlers(app: FastifyInstance) {
 			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
-			const pool = await app.pg.pool
+			const pool = app.pg.pool
 
 			if (!req.user || !req.organization) {
 				return reply.code(403).send('Forbidden')
 			}
 
-			// TODO: should throw error if student with such `outerId` already exists
-			const result = await createStudentQuery(pool, {
-				...req.body,
-				organization: req.organization.id,
-				updatedBy: req.user.id,
-			})
+			try {
+				const result = await createStudentQuery(pool, {
+					...req.body,
+					organization: req.organization.id,
+					updatedBy: req.user.id,
+				})
 
-			reply.send(result.rows[0])
+				reply.send(result.rows[0])
+			} catch (error) {
+				if (isDatabaseError(error)) {
+					if (error.code === '23505') {
+						// Unique key violation
+						return reply.code(400).send(error.message)
+					}
+				}
+
+				throw error
+			}
 		}
 	)
 	// PUT
