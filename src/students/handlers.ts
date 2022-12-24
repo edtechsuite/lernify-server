@@ -4,21 +4,13 @@ import { isDatabaseError } from '../dal/databaseError'
 import {
 	createStudentQuery,
 	getStudentByIdQuery,
-	getStudentsByOrg,
 	updateStudentQuery,
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
 import { StudentCreate, StudentUpdate } from './types'
 
 export function initHandlers(app: FastifyInstance) {
-	// GET /all by organization
-	app.route<{
-		Params: {
-			orgId: number
-		}
-	}>({
-		method: 'GET',
-		url: `/byOrganization/:orgId`,
+	app.get(`/`, {
 		schema: {
 			params: {
 				type: 'object',
@@ -29,9 +21,12 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		preHandler: [app.verifyOrgAccess],
 		handler: async (req, reply) => {
-			const pool = app.pg.pool
-			const result = await getStudentsByOrg(pool, req.params.orgId)
-			reply.send(result.rows)
+			return prisma.students.findMany({
+				where: {
+					organization: req.organization?.id,
+					deleted: false,
+				},
+			})
 		},
 	})
 
