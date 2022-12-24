@@ -26,4 +26,4 @@ jobs:
           heroku_app_name: 'attendance-tracker-server' #Must be unique in Heroku
           heroku_email: 'edtechsuite.dev@gmail.com'
           usedocker: true
-          dontuseforce: true
+          dontuseforce: 1
