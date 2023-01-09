@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { prisma } from '../utils/prisma'
 import { getDecodedToken } from '../utils/request-context'
 import { createOrganization } from './businessLayer/createOrganization'
 import { removeOrganization } from './businessLayer/removeOrganization'
@@ -152,6 +153,65 @@ export function initHandlers(app: FastifyInstance) {
 				throw error
 			} finally {
 				client.release()
+			}
+		}
+	)
+
+	app.get<{
+		Params: {
+			token: string
+		}
+	}>(
+		'/inviteInfo/:token',
+		{
+			schema: {
+				params: {
+					type: 'object',
+					required: ['token'],
+					properties: {
+						token: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyJWT],
+		},
+		async (req, resp) => {
+			const invite = await prisma.invites.findFirst({
+				where: {
+					token: req.params.token,
+				},
+				include: {
+					updatedByUsers: true,
+				},
+			})
+
+			if (!invite) {
+				resp.code(400).send('Invalid token')
+				return
+			}
+
+			if (invite.email !== req.user?.email) {
+				return [400, 'Invalid token']
+			}
+
+			if (new Date(invite.dueTo) < new Date()) {
+				return [400, 'Token expired']
+			}
+
+			const organization = await prisma.organizations.findUnique({
+				where: {
+					id: invite.organization,
+				},
+			})
+
+			return {
+				organization: {
+					name: organization?.name,
+				},
+				invite: {
+					role: invite.role,
+					updatedBy: invite.updatedByUsers,
+				},
 			}
 		}
 	)

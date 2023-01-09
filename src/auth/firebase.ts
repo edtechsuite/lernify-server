@@ -23,3 +23,16 @@ export function createUser(email: string, password: string) {
 	const auth = getAuth()
 	return auth.createUser({ email, password })
 }
+
+export function getUser(email: string) {
+	const auth = getAuth()
+	return auth.getUserByEmail(email)
+}
+
+export async function getOrCreateUser(email: string, password: string) {
+	try {
+		return await getUser(email)
+	} catch {
+		return await createUser(email, password)
+	}
+}

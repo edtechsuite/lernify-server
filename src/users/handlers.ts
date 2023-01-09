@@ -235,6 +235,7 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
+	// TODO: move to organization module
 	app.post<{
 		Body: {
 			email: string
@@ -276,6 +277,7 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
+	// TODO: move to organization module
 	app.post<{
 		Body: {
 			token: string

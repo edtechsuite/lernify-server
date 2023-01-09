@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
+import { prisma } from '../utils/prisma'
 import { getDecodedToken } from '../utils/request-context'
-import { createUser } from './firebase'
+import { getOrCreateUser } from './firebase'
 import { syncProfile } from './logic/syncProfile'
 
 export function initHandlers(app: FastifyInstance) {
@@ -62,19 +63,30 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		async (req, reply) => {
 			const { name, email, password } = req.body
-			const fbUser = await createUser(email, password)
-			const client = await app.pg.connect()
-			try {
-				const result = await client.query(
-					'INSERT INTO users ( name, email, outerId ) VALUES ( $1, $2, $3 ) returning id, name, email',
-					[name, email, fbUser.uid]
-				)
-				reply.send(result.rows[0])
-			} catch (error) {
-				throw error
-			} finally {
-				client.release()
+			const fbUser = await getOrCreateUser(email, password)
+			const dbUser = await prisma.users.findUnique({
+				where: {
+					email,
+				},
+			})
+
+			if (dbUser) {
+				reply.code(409).send('User already exists')
+				return
 			}
+
+			return await prisma.users.create({
+				data: {
+					name,
+					email,
+					outerId: fbUser.uid,
+				},
+				select: {
+					id: true,
+					name: true,
+					email: true,
+				},
+			})
 		}
 	)
 
