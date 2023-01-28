@@ -178,7 +178,7 @@ export function initHandlers(app: FastifyInstance) {
 	)
 
 	app.put<{
-		Body: ActivityUpdate
+		Body: Partial<ActivityUpdate>
 		Params: {
 			id: string
 		}
@@ -195,10 +195,18 @@ export function initHandlers(app: FastifyInstance) {
 				},
 				body: {
 					type: 'object',
-					required: ['name', 'performerId'],
 					properties: {
 						name: { type: 'string' },
-						performerId: { type: 'number' },
+						performerId: {
+							anyOf: [
+								{
+									type: 'null',
+								},
+								{
+									type: 'number',
+								},
+							],
+						},
 					},
 				},
 			},
