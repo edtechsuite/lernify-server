@@ -34,14 +34,12 @@ export function initHandlers(app: FastifyInstance) {
 	})
 
 	// GET by params
-	app.route<{
+	app.get<{
 		Querystring: {
 			performerId: string
 		}
 		Headers: OrgHeaderEnsured
-	}>({
-		method: 'GET',
-		url: `/`,
+	}>('/', {
 		schema: {
 			querystring: {
 				type: 'object',
@@ -59,6 +57,7 @@ export function initHandlers(app: FastifyInstance) {
 						? parseInt(req.query.performerId, 10)
 						: undefined,
 					deleted: false,
+					archived: false,
 				},
 			})
 
@@ -207,6 +206,7 @@ export function initHandlers(app: FastifyInstance) {
 								},
 							],
 						},
+						archived: { type: 'boolean' },
 					},
 				},
 			},
@@ -220,7 +220,13 @@ export function initHandlers(app: FastifyInstance) {
 				},
 			})
 			const result = await prisma.activities.update({
-				data: req.body,
+				data: {
+					name: req.body.name ?? data.name,
+					performerId: req.body.performerId ?? data.performerId,
+					archived: req.body.archived ?? data.archived,
+					updatedAt: new Date(),
+					updatedBy: req.user!.id,
+				},
 				where: {
 					id: data.id,
 				},
@@ -262,6 +268,8 @@ export function initHandlers(app: FastifyInstance) {
 				where: {
 					activityId: data.id,
 					endDate: null,
+					updatedAt: new Date(),
+					updatedBy: req.user!.id,
 				},
 				data: {
 					endDate: new Date(),
@@ -274,6 +282,8 @@ export function initHandlers(app: FastifyInstance) {
 				},
 				data: {
 					deleted: true,
+					updatedAt: new Date(),
+					updatedBy: req.user!.id,
 				},
 				select: returnActivity,
 			})
@@ -400,4 +410,5 @@ const returnActivity = {
 	updatedBy: true,
 	createdAt: true,
 	updatedAt: true,
+	archived: true,
 }

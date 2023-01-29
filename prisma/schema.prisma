@@ -18,6 +18,7 @@ model activities {
   createdAt            DateTime               @default(now()) @db.Timestamp(6)
   updatedAt            DateTime               @default(now()) @db.Timestamp(6)
   updatedBy            Int
+  archived             Boolean                @default(false)
   organization         organizations          @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   performer            users?                 @relation("activities_performerIdTousers", fields: [performerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedByUser        users                  @relation("activities_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)

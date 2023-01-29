@@ -19,13 +19,17 @@ export type ActivityRecord = {
 	// Used by the attendances for the backwards compatibility (groups were migrated from firebase)
 	outerId: string
 	deleted: boolean
+	archived: boolean
 
 	updatedBy: number
 	createdAt: string
 	updatedAt: string
 }
 
-export type ActivityUpdate = Pick<ActivityRecord, 'performerId' | 'name'>
+export type ActivityUpdate = Pick<
+	ActivityRecord,
+	'performerId' | 'name' | 'archived'
+>
 export type ActivityCreate = Pick<
 	ActivityRecord,
 	'performerId' | 'name' | 'type'

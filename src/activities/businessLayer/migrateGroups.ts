@@ -9,6 +9,7 @@ import { getGroups } from '../../firebase/groups'
 import { getStudentsToGroups } from '../../firebase/studentsToGroups'
 import { User } from '../../users/types'
 
+// TODO: do we need it?
 export async function migrateGroups(pool: Pool, user: User) {
 	const organizations = await getAllOrganization(pool)
 
@@ -27,6 +28,7 @@ export async function migrateGroups(pool: Pool, user: User) {
 				outerId: group.id,
 				organizationId: org.id,
 				updatedBy: user.id,
+				archived: false,
 			})
 			groupsCount += result ? result.rowCount : 0
 		}
