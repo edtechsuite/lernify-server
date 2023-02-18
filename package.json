@@ -13,7 +13,8 @@
 		"docker.run": "docker-compose up --remove-orphans",
 		"prisma.pull": "prisma db pull",
 		"prisma.generate": "prisma generate",
-		"test": "jest"
+		"test": "jest",
+		"test.watch": "jest --watch"
 	},
 	"repository": {
 		"type": "git",

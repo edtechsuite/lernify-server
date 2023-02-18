@@ -36,7 +36,11 @@ export function initHandlers(app: FastifyInstance) {
 	// GET by params
 	app.get<{
 		Querystring: {
-			performerId: string
+			performerId?: string
+			participantId?: string
+			date?: string
+			archived?: 'true' | 'false' | 'all'
+			deleted?: 'true' | 'false' | 'all'
 		}
 		Headers: OrgHeaderEnsured
 	}>('/', {
@@ -45,92 +49,64 @@ export function initHandlers(app: FastifyInstance) {
 				type: 'object',
 				properties: {
 					performerId: { type: 'string' },
+					date: { type: 'string' },
+					participantId: { type: 'string' },
+					archived: { enum: ['true', 'false', 'all'] },
+					deleted: { enum: ['true', 'false', 'all'] },
 				},
 			},
 		},
 		preHandler: [app.verifyOrgAccess],
 		handler: async (req) => {
+			const {
+				archived = 'false',
+				performerId,
+				deleted = 'false',
+				participantId,
+				date,
+			} = req.query
 			const result = await prisma.activities.findMany({
 				where: {
 					organizationId: req.organization!.id,
-					performerId: req.query.performerId
-						? parseInt(req.query.performerId, 10)
-						: undefined,
-					deleted: false,
-					archived: false,
+					performerId: performerId ? Number(performerId) : undefined,
+					deleted:
+						deleted === 'true' ? true : deleted === 'false' ? false : undefined,
+					archived:
+						archived === 'true'
+							? true
+							: archived === 'false'
+							? false
+							: undefined,
+					...(participantId
+						? {
+								studentsToActivities: {
+									some: {
+										participantId: Number(participantId),
+										startDate: {
+											lte: date ? new Date(date) : undefined,
+										},
+										...(date
+											? {
+													OR: [
+														{
+															endDate: null,
+														},
+														{
+															endDate: {
+																gte: new Date(date),
+															},
+														},
+													],
+											  }
+											: {}),
+									},
+								},
+						  }
+						: {}),
 				},
 			})
 
 			return result
-		},
-	})
-
-	// GET by participant
-	app.route<{
-		Params: {
-			participantId: string
-		}
-		Querystring: {
-			date?: string
-		}
-		Headers: OrgHeaderEnsured
-	}>({
-		method: 'GET',
-		url: `/byParticipant/:participantId`,
-		schema: {
-			params: {
-				type: 'object',
-				properties: {
-					participantId: { type: 'string' },
-				},
-			},
-			querystring: {
-				type: 'object',
-				properties: {
-					date: { type: 'string' },
-				},
-			},
-		},
-		preHandler: [app.verifyOrgAccess],
-		handler: async (req, reply) => {
-			if (!req.organization) {
-				return reply.status(401).send('Unauthorized')
-			}
-			const participant = await prisma.students.findFirstOrThrow({
-				where: {
-					organization: req.organization.id,
-					id: parseInt(req.params.participantId, 10),
-				},
-			})
-
-			return await prisma.activities.findMany({
-				where: {
-					deleted: false,
-					organizationId: req.organization.id,
-					studentsToActivities: {
-						some: {
-							participantId: participant.id,
-							startDate: {
-								lte: req.query.date ? new Date(req.query.date) : undefined,
-							},
-							...(req.query.date
-								? {
-										OR: [
-											{
-												endDate: null,
-											},
-											{
-												endDate: {
-													gte: new Date(req.query.date),
-												},
-											},
-										],
-								  }
-								: {}),
-						},
-					},
-				},
-			})
 		},
 	})
 
@@ -222,7 +198,7 @@ export function initHandlers(app: FastifyInstance) {
 			const result = await prisma.activities.update({
 				data: {
 					name: req.body.name ?? data.name,
-					performerId: req.body.performerId ?? data.performerId,
+					performerId: req.body.performerId,
 					archived: req.body.archived ?? data.archived,
 					updatedAt: new Date(),
 					updatedBy: req.user!.id,
