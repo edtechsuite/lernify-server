@@ -104,6 +104,13 @@ export function initHandlers(app: FastifyInstance) {
 						  }
 						: {}),
 				},
+				include: {
+					studentsToActivities: {
+						where: {
+							participantId: participantId ? Number(participantId) : undefined,
+						},
+					},
+				},
 			})
 
 			return result
@@ -372,6 +379,82 @@ export function initHandlers(app: FastifyInstance) {
 			})
 
 			reply.status(200).send('ok')
+		}
+	)
+
+	app.get<{
+		Querystring: {
+			participantId?: string
+			activityId?: string
+			from?: string
+			to?: string
+		}
+		Headers: OrgHeaderEnsured
+	}>(
+		'/participation',
+		{
+			schema: {
+				querystring: {
+					type: 'object',
+					properties: {
+						participantId: { type: 'string' },
+						activityId: { type: 'string' },
+						from: { type: 'string' },
+						to: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req) => {
+			// TODO: check access
+			const result = await prisma.studentsToActivities.findMany({
+				where: {
+					participantId: req.query.participantId
+						? parseInt(req.query.participantId, 10)
+						: undefined,
+					activityId: req.query.activityId
+						? parseInt(req.query.activityId, 10)
+						: undefined,
+
+					...(req.query.from
+						? {
+								OR: [
+									{
+										endDate: {
+											gte: new Date(req.query.from),
+										},
+									},
+									{
+										endDate: null,
+									},
+								],
+						  }
+						: {}),
+					...(req.query.to
+						? {
+								OR: [
+									{
+										startDate: {
+											lte: new Date(req.query.to),
+										},
+									},
+								],
+						  }
+						: {}),
+				},
+				select: {
+					id: true,
+					activity: {
+						select: returnActivity,
+					},
+					startDate: true,
+					endDate: true,
+					participantId: true,
+				},
+			})
+
+			return result
 		}
 	)
 }
