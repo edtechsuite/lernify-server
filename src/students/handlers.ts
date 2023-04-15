@@ -4,6 +4,7 @@ import { isDatabaseError } from '../dal/databaseError'
 import {
 	createStudentQuery,
 	getStudentByIdQuery,
+	getStudentByNameAndOrganizationQuery,
 	updateStudentQuery,
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
@@ -264,6 +265,53 @@ export function initHandlers(app: FastifyInstance) {
 			})
 
 			reply.send(result.rows[0])
+		}
+	)
+
+	// does student exist in organization?
+	app.get<{
+		Params: {
+			name: string
+		}
+	}>(
+		'/search/:name',
+		{
+			schema: {
+				params: {
+					type: 'object',
+					properties: {
+						name: { type: 'string' },
+					},
+				},
+			},
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			const { name } = req.params
+			const pool = await app.pg.pool
+
+			// Searching the student by the name
+			const strateSearch = await getStudentByNameAndOrganizationQuery(
+				pool,
+				name.trim(),
+				req.organization!.id
+			)
+			if (strateSearch.rows.length > 0) {
+				return reply.send(strateSearch.rows[0])
+			}
+
+			// Searching the student by the reversed first and last name
+			const reverseName = name.trim().split(' ').reverse().join(' ')
+			const reverseSearch = await getStudentByNameAndOrganizationQuery(
+				pool,
+				reverseName,
+				req.organization!.id
+			)
+			if (reverseSearch.rows.length > 0) {
+				return reply.send(reverseSearch.rows[0])
+			}
+
+			reply.send(null)
 		}
 	)
 }

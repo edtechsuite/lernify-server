@@ -9,6 +9,18 @@ export async function getStudentByIdQuery(pool: Pool, id: number) {
 	)
 }
 
+export async function getStudentByNameAndOrganizationQuery(
+	pool: Pool,
+	name: string,
+	organization: number
+) {
+	return await pool.query<StudentRecord>(
+		`SELECT * FROM "students"
+		WHERE "name" = $1 AND "organization" = $2`,
+		[name, organization]
+	)
+}
+
 export async function createStudentQuery(
 	pool: Pool,
 	data: Omit<StudentRecord, 'id' | 'createdAt' | 'updatedAt'>
