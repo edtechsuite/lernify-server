@@ -1,12 +1,13 @@
 import fastify from 'fastify'
 import { fastifyRequestContextPlugin } from '@fastify/request-context'
 import { cert, initializeApp } from 'firebase-admin/app'
-import { getConfig, isProduction, PORT } from './config'
+import { getConfig, isProduction } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
 import studentsService from './students'
 import activitiesService from './activities'
 import usersService from './users'
+import profilesService from './profiles'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
@@ -69,6 +70,7 @@ export async function App() {
 	await app.register(authService, { prefix: '/auth' })
 
 	await app.register(usersService, { prefix: '/users' })
+	await app.register(profilesService, { prefix: '/profiles' })
 
 	await app.register(organizationsService, { prefix: '/organizations' })
 	await app.register(studentsService, { prefix: '/students' })

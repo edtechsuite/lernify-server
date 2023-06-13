@@ -103,9 +103,11 @@ model usersToOrganizations {
   createdAt                                   DateTime      @default(now()) @db.Timestamp(6)
   updatedAt                                   DateTime      @default(now()) @db.Timestamp(6)
   updatedBy                                   Int
+  deleted                                     Boolean       @default(false)
+  name                                        String        @default("") @db.VarChar(1000)
   organizations                               organizations @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_usersToOrganizations_updatedByTousers users         @relation("usersToOrganizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_usersToOrganizations_userIdTousers    users         @relation("usersToOrganizations_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                                        users         @relation("usersToOrganizations_userIdTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model studentsToActivities {

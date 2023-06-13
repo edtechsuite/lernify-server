@@ -25,6 +25,7 @@ export function decorateOrgPermission(app: FastifyInstance) {
 			request.query?.orgKey
 
 		if (!orgKey) {
+			// TODO: investigate possible ways to return error (`throw`)
 			return reply
 				.status(400)
 				.send(
