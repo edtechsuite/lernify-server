@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { getProfiles, updateProfile } from './domain'
+import { getProfile, getProfiles, updateProfile } from './domain'
 import { ForbiddenError } from '../utils/errors'
 
 export function initHandlers(app: FastifyInstance) {
@@ -43,13 +43,14 @@ export function initHandlers(app: FastifyInstance) {
 					reply.status(403)
 					return reply.send('Forbidden')
 				}
+				throw error
 			}
 		}
 	)
 
 	app.get<{
-		Params: {
-			deleted: boolean
+		Querystring: {
+			deleted?: boolean
 		}
 	}>(
 		'/',
@@ -58,8 +59,24 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		async (req) => {
 			const { organization } = req
-			const { deleted } = req.params
+			const { deleted } = req.query
 			const profiles = getProfiles(organization!.id, deleted)
+			return profiles
+		}
+	)
+
+	app.get<{
+		Params: {
+			id: string
+		}
+	}>(
+		'/:id',
+		{
+			preHandler: [app.verifyJWT],
+		},
+		async (req) => {
+			const { id } = req.params
+			const profiles = getProfile(parseInt(id, 10))
 			return profiles
 		}
 	)

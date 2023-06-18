@@ -43,3 +43,22 @@ export async function getProfiles(orgId: number, deleted = false) {
 		},
 	})
 }
+
+export async function getProfile(id: number) {
+	// TODO: check permissions
+	// User has access to organization of profile
+	return prisma.usersToOrganizations.findUniqueOrThrow({
+		where: {
+			id,
+		},
+		include: {
+			user: {
+				select: {
+					id: true,
+					email: true,
+					outerId: true,
+				},
+			},
+		},
+	})
+}
