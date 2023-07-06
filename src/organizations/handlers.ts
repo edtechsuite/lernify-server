@@ -17,22 +17,27 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		preHandler: [app.verifyJWT],
 		handler: async (req, reply) => {
-			const decodedToken = getDecodedToken(req)
-			const client = await app.pg.connect()
+			const user = req.user!
 
-			try {
-				const result = await client.query(
-					`SELECT *, "organizations"."id" FROM "organizations"
-						INNER JOIN "usersToOrganizations" ON "organizations"."id" = "usersToOrganizations"."organizationId"
-						WHERE "usersToOrganizations"."userId" = (SELECT "id" FROM "users" WHERE "outerId"=$1) AND "organizations"."deleted" IS FALSE`,
-					[decodedToken.uid]
-				)
-				reply.send(result.rows)
-			} catch (error: any) {
-				throw error
-			} finally {
-				client.release()
-			}
+			const result = await prisma.organizations.findMany({
+				where: {
+					users: {
+						some: {
+							userId: user.id,
+						},
+					},
+					deleted: false,
+				},
+				include: {
+					users: {
+						where: {
+							userId: user.id,
+						},
+					},
+				},
+			})
+
+			reply.send(result.map((item) => ({ ...item, role: item.users[0].role })))
 		},
 	})
 
@@ -191,11 +196,13 @@ export function initHandlers(app: FastifyInstance) {
 			}
 
 			if (invite.email !== req.user?.email) {
-				return [400, 'Invalid token']
+				resp.code(400).send('Invalid token')
+				return
 			}
 
 			if (new Date(invite.dueTo) < new Date()) {
-				return [400, 'Token expired']
+				resp.code(400).send('Token expired')
+				return
 			}
 
 			const organization = await prisma.organizations.findUnique({
