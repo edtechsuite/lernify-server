@@ -13,6 +13,7 @@
 		"docker.run": "docker-compose up --remove-orphans",
 		"prisma.pull": "prisma db pull",
 		"prisma.generate": "prisma generate",
+		"prisma.studio": "npx prisma studio",
 		"test": "jest",
 		"test.watch": "jest --watch"
 	},

@@ -33,7 +33,7 @@ export async function createOrganization(
 	await db.collection(`organizations/${data.id}/users`).doc(user.id).set(user)
 }
 
-export async function createUserInOrganization(
+export async function createUserInOrganizationFB(
 	orgKey: string,
 	user: {
 		id: string

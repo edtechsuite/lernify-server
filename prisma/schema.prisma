@@ -53,7 +53,7 @@ model organizations {
   users_organizations_ownerTousers     users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_organizations_updatedByTousers users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   students                             students[]
-  usersToOrganizations                 usersToOrganizations[]
+  users                                usersToOrganizations[]
 }
 
 model pgmigrations {

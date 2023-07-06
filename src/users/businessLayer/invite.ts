@@ -52,7 +52,8 @@ export async function confirmInvitation(
 	client: Pool,
 	token: string,
 	email: string,
-	user: User
+	user: User,
+	name: string
 ): Promise<[number, string]> {
 	const inviteResponse = await getInviteQuery(client, token)
 	if (inviteResponse.rows.length === 0) {
@@ -74,12 +75,12 @@ export async function confirmInvitation(
 	).rows[0]
 
 	await addUserToOrganization(
-		client,
 		organization.id,
 		organization.key,
 		user.outerId,
 		user.id,
-		invite.role
+		invite.role,
+		name
 	)
 
 	return [200, 'Invitation confirmed']

@@ -20,6 +20,7 @@ export function initHandlers(app: FastifyInstance) {
 	// TODO: probably bag with wrong JOIN (duplicated records)
 	// TODO: should return user by id
 	// GET /
+	// TODO: probably remove
 	app.get<{
 		Params: {
 			orgId: string
@@ -281,20 +282,18 @@ export function initHandlers(app: FastifyInstance) {
 	app.post<{
 		Body: {
 			token: string
+			name: string
 		}
 	}>(
 		'/confirmInvitation',
 		{
 			schema: {
-				headers: {
-					Authorization: { type: 'string' },
-				},
 				body: {
 					type: 'object',
+					required: ['name', 'token'],
 					properties: {
-						email: { type: 'string' },
-						role: { type: 'string' },
-						orgId: { type: 'number' },
+						name: { type: 'string' },
+						token: { type: 'string' },
 					},
 				},
 			},
@@ -303,7 +302,7 @@ export function initHandlers(app: FastifyInstance) {
 		async (req, reply) => {
 			const decodedToken = getDecodedToken(req)
 			const client = await app.pg.pool
-			const { token } = req.body
+			const { token, name } = req.body
 
 			if (!decodedToken.email) {
 				reply.status(400)
@@ -315,7 +314,8 @@ export function initHandlers(app: FastifyInstance) {
 				client,
 				token,
 				decodedToken.email,
-				user
+				user,
+				name
 			)
 
 			reply.code(code).send(message)
