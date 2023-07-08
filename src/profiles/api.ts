@@ -50,7 +50,7 @@ export function initHandlers(app: FastifyInstance) {
 
 	app.get<{
 		Querystring: {
-			deleted?: boolean
+			deleted?: string
 		}
 	}>(
 		'/',
@@ -60,7 +60,7 @@ export function initHandlers(app: FastifyInstance) {
 		async (req) => {
 			const { organization } = req
 			const { deleted } = req.query
-			const profiles = getProfiles(organization!.id, deleted)
+			const profiles = getProfiles(organization!.id, deleted === 'true')
 			return profiles
 		}
 	)
