@@ -3,6 +3,8 @@ import { nanoid } from 'nanoid'
 import { OrgHeaderEnsured } from '../auth/types'
 import { prisma } from '../utils/prisma'
 import { ActivityCreate, ActivityUpdate } from './types'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { getActivity } from './businessLayer/getActivity'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET
@@ -23,13 +25,20 @@ export function initHandlers(app: FastifyInstance) {
 			},
 		},
 		preHandler: [app.verifyOrgAccess],
-		handler: async (req) => {
-			return await prisma.activities.findFirst({
-				where: {
-					id: parseInt(req.params.id, 10),
-					organizationId: req.organization!.id,
-				},
-			})
+		handler: async (req, reply) => {
+			try {
+				return await getActivity(
+					parseInt(req.params.id, 10),
+					req.organization!.id
+				)
+			} catch (error) {
+				if (
+					error instanceof PrismaClientKnownRequestError &&
+					error.code === 'P2025'
+				) {
+					return reply.code(404).send(error.message)
+				}
+			}
 		},
 	})
 

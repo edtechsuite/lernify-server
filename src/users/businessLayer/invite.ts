@@ -3,6 +3,7 @@ import { inviteTokenExpiration } from '../../config'
 import { getOrganizationByIdQuery } from '../../dal/organizations'
 import { User } from '../types'
 import { addUserToOrganization } from './addUserToOrganization'
+import { prisma } from '../../utils/prisma'
 
 export async function inviteUser(
 	client: PoolClient,
@@ -73,6 +74,28 @@ export async function confirmInvitation(
 	const organization = (
 		await getOrganizationByIdQuery(client, invite.organization)
 	).rows[0]
+
+	const alreadyInvited = await prisma.usersToOrganizations.findFirst({
+		where: {
+			organizationId: invite.organization,
+			userId: user.id,
+		},
+	})
+
+	if (alreadyInvited) {
+		await prisma.usersToOrganizations.update({
+			where: {
+				id: alreadyInvited.id,
+			},
+			data: {
+				role: invite.role,
+				updatedBy: user.id,
+				updatedAt: new Date(),
+				name,
+			},
+		})
+		return [200, 'Invitation confirmed']
+	}
 
 	await addUserToOrganization(
 		organization.id,
