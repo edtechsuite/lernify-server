@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { prisma } from '../utils/prisma'
+import { isUniqueConstraintFailedError, prisma } from '../utils/prisma'
 import { getDecodedToken } from '../utils/request-context'
 import { createOrganization } from './businessLayer/createOrganization'
 import { removeOrganization } from './businessLayer/removeOrganization'
@@ -101,13 +101,11 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		async (req, reply) => {
 			const decodedToken = getDecodedToken(req)
-			const client = await app.pg.connect()
-
 			try {
-				return await createOrganization(app, decodedToken.uid, req.body)
+				return await createOrganization(decodedToken.uid, req.body, req.user!)
 			} catch (error: any) {
-				if (error.constraint === 'organizations_key_key') {
-					reply.code(400).send({
+				if (isUniqueConstraintFailedError(error)) {
+					reply.code(409).send({
 						message: `Organization key ${req.body.key} already exists`,
 					})
 
@@ -115,8 +113,6 @@ export function initHandlers(app: FastifyInstance) {
 				}
 
 				throw error
-			} finally {
-				client.release()
 			}
 		}
 	)

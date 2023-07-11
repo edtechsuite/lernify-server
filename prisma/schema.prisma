@@ -50,8 +50,8 @@ model organizations {
   deleted                              Boolean                @default(false)
   activities                           activities[]
   invites                              invites[]
-  users_organizations_ownerTousers     users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_organizations_updatedByTousers users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ownerUser                            users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByUser                        users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   students                             students[]
   users                                usersToOrganizations[]
 }
