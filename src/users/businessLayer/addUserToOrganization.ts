@@ -1,5 +1,3 @@
-import { Pool } from 'pg'
-import { assignUserToOrganizationQuery } from '../../dal/users2organizations'
 import { createUserInOrganizationFB } from '../../firebase/organizations'
 import { prisma } from '../../utils/prisma'
 
