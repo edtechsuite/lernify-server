@@ -1,3 +1,5 @@
+import { User } from "../users/types"
+
 export type Profile = {
 	id: number
 	name: string
@@ -20,4 +22,8 @@ export const profileSelector: Record<keyof Profile, boolean> = {
 	createdAt: true,
 	updatedAt: true,
 	updatedBy: true,
+}
+
+export type ProfileWithUser = Profile & {
+	user: Omit<User, 'updatedAt' | 'createdAt'>
 }

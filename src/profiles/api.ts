@@ -34,10 +34,10 @@ export function initHandlers(app: FastifyInstance) {
 		async (req, reply) => {
 			const { name } = req.body
 			const { id } = req.params
-			const { user } = req
+			const { profile } = req
 
 			try {
-				return updateProfile(user, id, { name })
+				return updateProfile(profile, id, { name })
 			} catch (error) {
 				if (error instanceof ForbiddenError) {
 					reply.status(403)

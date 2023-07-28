@@ -8,6 +8,7 @@ import studentsService from './students'
 import activitiesService from './activities'
 import usersService from './users'
 import profilesService from './profiles'
+import { setProfileToRequest } from './profiles/setProfileToRequest'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
 import { decorateWithAuth } from './auth/authDecorators'
@@ -66,6 +67,8 @@ export async function App() {
 	setCurrentUserToRequest(app)
 	// Should be initialized after `setCurrentUserToRequest`
 	setCurrentOrganizationToRequest(app)
+	// Should be initialized after `setCurrentOrganizationToRequest`
+	setProfileToRequest(app)
 
 	await app.register(authService, { prefix: '/auth' })
 

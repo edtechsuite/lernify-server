@@ -55,7 +55,7 @@ describe('Application', () => {
 		expect(JSON.parse(response.body)).toEqual(newUser)
 	})
 
-	test('should handle user creation', async () => {
+	test.skip('should handle user creation', async () => {
 		console.log('test user 111', testUser)
 	})
 

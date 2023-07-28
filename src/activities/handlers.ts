@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify'
 import { nanoid } from 'nanoid'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { OrgHeaderEnsured } from '../auth/types'
 import { prisma } from '../utils/prisma'
 import { ActivityCreate, ActivityUpdate } from './types'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 import { getActivity } from './businessLayer/getActivity'
 
 export function initHandlers(app: FastifyInstance) {
