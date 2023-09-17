@@ -6,6 +6,7 @@ import authService from './auth/index'
 import organizationsService from './organizations'
 import studentsService from './students'
 import activitiesService from './activities'
+import reportsService from './reports'
 import usersService from './users'
 import profilesService from './profiles'
 import { setProfileToRequest } from './profiles/setProfileToRequest'
@@ -78,6 +79,7 @@ export async function App() {
 	await app.register(organizationsService, { prefix: '/organizations' })
 	await app.register(studentsService, { prefix: '/students' })
 	await app.register(activitiesService, { prefix: '/activities' })
+	await app.register(reportsService, { prefix: '/report' })
 
 	app.after(routes)
 
