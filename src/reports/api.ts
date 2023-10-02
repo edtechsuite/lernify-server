@@ -6,17 +6,29 @@ export function initHandlers(app: FastifyInstance) {
 		Querystring: {
 			from?: string
 			to?: string
-			tags?: string[]
+			tags?: string | string[]
 			order?: 'asc' | 'desc'
+			orderBy?: 'rate' | 'participantName' | 'activityName'
 		}
 	}>(
 		'/',
 		{
 			preHandler: [app.verifyJWT],
+			schema: {
+				querystring: {
+					type: 'object',
+					properties: {
+						from: { type: 'string' },
+						to: { type: 'string' },
+						order: { enum: ['asc', 'desc'] },
+						orderBy: { enum: ['rate', 'participantName', 'activityName'] },
+					},
+				},
+			},
 		},
 		async (req) => {
 			const { organization } = req
-			const { from, to, tags, order } = req.query
+			const { from, to, tags = [], order, orderBy } = req.query
 			if (!from || !to) {
 				throw new Error('`from` and `to` are required')
 			}
@@ -40,8 +52,9 @@ export function initHandlers(app: FastifyInstance) {
 					from: new Date(from),
 					to: new Date(to),
 				},
-				tags || [],
-				order
+				typeof tags === 'string' ? [tags] : tags,
+				order,
+				orderBy
 			)
 		}
 	)

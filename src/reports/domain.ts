@@ -7,26 +7,43 @@ export async function reportByStudentsTags(
 	orgKey: string,
 	range: { from: Date; to: Date },
 	tags: string[],
-	order: 'asc' | 'desc' = 'asc'
+	order: 'asc' | 'desc' = 'asc',
+	orderFactor: 'rate' | 'participantName' | 'activityName' = 'participantName'
 ): Promise<ReportRecord[]> {
 	const participants = await getParticipantsByTags(orgKey, tags)
 	const attendances = await getAttendances(orgKey, range)
 	const [attendanceMap, activitiesId] = getAttendanceMap(attendances)
 
-	return calculateRate(
+	const result = calculateRate(
 		attendanceMap,
 		await getActivities(orgKey, activitiesId),
 		participants
 	).sort((a, b) => {
-		if (a.rate === undefined) {
+		let aValue = a[orderFactor]
+		let bValue = b[orderFactor]
+
+		if (typeof aValue === 'string') {
+			aValue = aValue.toLowerCase()
+		}
+		if (typeof bValue === 'string') {
+			bValue = bValue.toLowerCase()
+		}
+
+		if (aValue === undefined) {
 			return 1
 		}
-		if (b.rate === undefined) {
+		if (bValue === undefined) {
 			return -1
 		}
 
-		return order === 'asc' ? a.rate - b.rate : b.rate - a.rate
+		if (aValue === bValue) {
+			return 0
+		}
+
+		return aValue > bValue ? 1 : -1
 	})
+
+	return order === 'asc' ? result : result.reverse()
 }
 
 type ReportRecord = {
