@@ -4,4 +4,12 @@ export interface Messenger {
 
 export interface Emailer {
 	register(email: string): Promise<void>
+	invite(data: InviteData): Promise<void>
+}
+
+type InviteData = {
+	email: string
+	link: string
+	orgName: string
+	userName: string
 }

@@ -267,9 +267,19 @@ export function initHandlers(app: FastifyInstance) {
 			const client = await app.pg.connect()
 			const { email, role, orgId } = req.body
 			try {
-				return await app.pg.transact(async (client) => {
-					return await inviteUser(client, decodedToken.uid, email, orgId, role)
+				const invite = await inviteUser(decodedToken.uid, email, orgId, role)
+
+				// TODO: probably we need to use `env` variable for the hostname in the production
+				const link = `${req.headers.origin}/${invite.organizations.key}/invite/confirm/${invite.token}`
+
+				await req.mailer.invite({
+					email,
+					link,
+					orgName: invite.organizations.name,
+					userName: invite.updatedByUsers.name,
 				})
+
+				return invite
 			} catch (error: any) {
 				throw error
 			} finally {
