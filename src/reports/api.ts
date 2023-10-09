@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { reportByStudentsTags } from './domain'
+import { sendMessage } from '../ai'
 
 export function initHandlers(app: FastifyInstance) {
 	app.get<{
@@ -58,4 +59,16 @@ export function initHandlers(app: FastifyInstance) {
 			)
 		}
 	)
+
+	app.post<{
+		Body: {
+			message: string
+		}
+	}>('/auto', async (req) => {
+		// const result = 'TODO'
+		console.log('=-= 🚀 ~ initHandlers ~ req.body.message:', req.body.message)
+		const result = await sendMessage(req.body.message)
+		console.log('=-= 🚀 ~ /auto ~ result:', result)
+		return result
+	})
 }
