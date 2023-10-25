@@ -9,6 +9,8 @@ import {
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
 import { StudentCreate, StudentUpdate } from './types'
+import { recalculateCurrentAttendanceRate } from './domain'
+import { getAllAttendances } from '../firebase/attendances'
 
 export function initHandlers(app: FastifyInstance) {
 	app.get(`/`, {
@@ -26,6 +28,13 @@ export function initHandlers(app: FastifyInstance) {
 				where: {
 					organization: req.organization?.id,
 					deleted: false,
+				},
+				include: {
+					studentsToActivities: {
+						select: {
+							currentAttendanceRate: true,
+						},
+					},
 				},
 			})
 		},
@@ -214,6 +223,54 @@ export function initHandlers(app: FastifyInstance) {
 
 				throw error
 			}
+		}
+	)
+
+	// Recalculate rate
+	app.post(
+		'/recalculateRate',
+		{
+			preHandler: [app.verifyOrgAccess],
+		},
+		async (req, reply) => {
+			// TODO: verify admin rights
+
+			const attendeeToActivity = await prisma.studentsToActivities.findMany({
+				where: {
+					activity: {
+						organizationId: req.organization!.id,
+					},
+				},
+				include: {
+					activity: true,
+					participant: true,
+				},
+			})
+			const [{ attendances }] = await getAllAttendances([req.organization!.key])
+			const recalculatedData = await recalculateCurrentAttendanceRate(
+				attendeeToActivity.map((a2a) => ({
+					...a2a,
+					activityOuterId: a2a.activity!.outerId,
+					participantOuterId: a2a.participant!.outerId,
+				})),
+				attendances
+			)
+
+			await prisma.$transaction(
+				recalculatedData.map((d) =>
+					prisma.studentsToActivities.update({
+						where: {
+							id: d.id,
+						},
+						data: {
+							eventsNumber: d.allRecords,
+							currentAttendanceRate: d.attendanceRate,
+						},
+					})
+				)
+			)
+
+			reply.send('Done')
 		}
 	)
 	// PUT

@@ -21,3 +21,21 @@ export async function getAttendances(
 
 	return querySnapshot.docs.map((doc) => doc.data() as AttendanceRecordFirebase)
 }
+
+export async function getAllAttendances(orgKeys: string[]) {
+	const db = getFirestore()
+	const attendancesByOrgPromises = orgKeys.map(async (orgKey) => {
+		const collectionRef = db.collection(`organizations/${orgKey}/attendances`)
+
+		const querySnapshot = await collectionRef.get()
+
+		return {
+			orgKey,
+			attendances: querySnapshot.docs.map(
+				(doc) => doc.data() as AttendanceRecordFirebase
+			),
+		}
+	})
+
+	return Promise.all(attendancesByOrgPromises)
+}
