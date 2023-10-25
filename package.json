@@ -5,7 +5,7 @@
 	"scripts": {
 		"start": "node ./build/index.js",
 		"dev": "nodemon",
-		"build": "tsc -p tsconfig.json",
+		"build": "npm run cleanBuildFolder && tsc -p tsconfig.json && npm run copyExtraBuildFiles",
 		"migrate.create": "node-pg-migrate create",
 		"migrate.up": "node-pg-migrate up --no-reject-unauthorized",
 		"migrate.up.noSSL": "node-pg-migrate up",
@@ -15,7 +15,9 @@
 		"prisma.generate": "prisma generate",
 		"prisma.studio": "npx prisma studio",
 		"test": "jest",
-		"test.watch": "jest --watch"
+		"test.watch": "jest --watch",
+		"cleanBuildFolder": "rimraf build/",
+		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css build/"
 	},
 	"repository": {
 		"type": "git",
@@ -40,19 +42,24 @@
 		"fastify": "^3.27.4",
 		"fastify-plugin": "^4.0.0",
 		"firebase-admin": "^10.0.2",
+		"lodash.template": "^4.5.0",
 		"nanoid": "^3.3.4",
 		"node-pg-migrate": "^6.2.1",
 		"pg": "^8.7.3",
 		"prompts": "^2.4.2",
+		"resend": "^1.0.0",
 		"typescript": "^5.1.6",
 		"winston": "^3.6.0"
 	},
 	"devDependencies": {
 		"@types/jest": "^28.1.7",
+		"@types/lodash.template": "^4.5.1",
+		"copyfiles": "^2.4.1",
 		"jest": "^28.1.3",
 		"nodemon": "^2.0.15",
 		"pino-pretty": "^7.6.1",
 		"prisma": "^4.16.2",
+		"rimraf": "^5.0.1",
 		"ts-jest": "^28.0.8",
 		"ts-node": "^10.7.0"
 	}

@@ -75,7 +75,7 @@ export function initHandlers(app: FastifyInstance) {
 				return
 			}
 
-			return await prisma.users.create({
+			const createdUser = await prisma.users.create({
 				data: {
 					name,
 					email,
@@ -87,6 +87,9 @@ export function initHandlers(app: FastifyInstance) {
 					email: true,
 				},
 			})
+			req.mailer.register(email)
+
+			return createdUser
 		}
 	)
 

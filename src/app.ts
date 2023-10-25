@@ -17,6 +17,7 @@ import { decorateOrgPermission } from './auth/orgAccessDecorator'
 import { databaseConnector } from './databaseConnector'
 import { setCurrentUserToRequest } from './users/setCurrentUserToRequest'
 import { setCurrentOrganizationToRequest } from './organizations/setCurrentOrganizationToRequest'
+import { Mailer } from './messaging'
 
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
@@ -70,6 +71,10 @@ export async function App() {
 	setCurrentOrganizationToRequest(app)
 	// Should be initialized after `setCurrentOrganizationToRequest`
 	setProfileToRequest(app)
+
+	// Mail service
+	const mailer = new Mailer()
+	app.decorateRequest('mailer', mailer)
 
 	await app.register(authService, { prefix: '/auth' })
 
