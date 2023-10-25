@@ -40,11 +40,14 @@ export function initHandlers(app: FastifyInstance) {
 			if (fromDate > toDate) {
 				throw new Error('`from` must be less than `to`')
 			}
-			const oneMonth = 1000 * 60 * 60 * 24 * 31
-			const oneMonthAndOneDay = oneMonth + 1000 * 60 * 60 * 24
-			if (toDate.getTime() - fromDate.getTime() > oneMonthAndOneDay) {
-				throw new Error('Date range must be less than 31 days')
-			}
+
+			// Temporary disabled due to issues with another solution
+
+			// const oneMonth = 1000 * 60 * 60 * 24 * 31
+			// const oneMonthAndOneDay = oneMonth + 1000 * 60 * 60 * 24
+			// if (toDate.getTime() - fromDate.getTime() > oneMonthAndOneDay) {
+			// 	throw new Error('Date range must be less than 31 days')
+			// }
 
 			return reportByStudentsTags(
 				organization!.key,
