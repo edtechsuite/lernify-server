@@ -62,6 +62,22 @@ To create migration script run `npm run migrate.create my migration script` wher
 
 To migrate database run `npm run migrate.up`, `npm run prisma.pull` and `npm run prisma.generate`
 
+## Database backup
+
+- Use PGAdmin
+- Connect to Heroku database
+- Make a backup using next settings
+  - Select filename
+  - Format: `Custom`
+  - Role name is you user for login
+- Restore in another DB
+  - Create the role with exact name as in the backup
+  - While creating DB set newly created user as `Owner`
+  - Restore backup with next settings
+    - Format: `Custom or tar`
+    - Set filename
+    - Role name is a user with same name as in the backup
+
 ## Tmp
 
 TODO: check user to perform data migration
