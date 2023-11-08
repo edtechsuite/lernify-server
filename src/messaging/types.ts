@@ -5,6 +5,13 @@ export interface Messenger {
 export interface Emailer {
 	register(email: string): Promise<void>
 	invite(data: InviteData): Promise<void>
+	assignment(data: AssignmentData): Promise<void>
+}
+
+type AssignmentData = {
+	isAssign: boolean
+	email: string
+	link: string
 }
 
 type InviteData = {

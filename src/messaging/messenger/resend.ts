@@ -10,6 +10,7 @@ export class ResendMessenger implements Messenger {
 	}
 
 	async send(from: string, to: string, subject: string, html: string) {
+		// TODO: check if email is belongs to somebody in the system and active
 		await this.resend.emails.send({
 			from,
 			to,

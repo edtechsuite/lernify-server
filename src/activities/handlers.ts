@@ -3,8 +3,9 @@ import { nanoid } from 'nanoid'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { OrgHeaderEnsured } from '../auth/types'
 import { prisma } from '../utils/prisma'
-import { ActivityCreate, ActivityUpdate } from './types'
+import { ActivityCreate } from './types'
 import { getActivity } from './businessLayer/getActivity'
+import { ActivityUpdate, editActivity } from './domain/editActivity'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET
@@ -205,25 +206,8 @@ export function initHandlers(app: FastifyInstance) {
 			preHandler: [app.verifyOrgAccess],
 		},
 		async (req) => {
-			const data = await prisma.activities.findFirstOrThrow({
-				where: {
-					organizationId: req.organization!.id,
-					id: parseInt(req.params.id, 10),
-				},
-			})
-			const result = await prisma.activities.update({
-				data: {
-					name: req.body.name ?? data.name,
-					performerId: req.body.performerId,
-					archived: req.body.archived ?? data.archived,
-					updatedAt: new Date(),
-					updatedBy: req.user!.id,
-				},
-				where: {
-					id: data.id,
-				},
-				select: returnActivity,
-			})
+			const id = parseInt(req.params.id, 10)
+			const result = editActivity(id, req.body, req)
 
 			return result
 		}
