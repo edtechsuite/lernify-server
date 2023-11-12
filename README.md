@@ -62,6 +62,27 @@ To create migration script run `npm run migrate.create my migration script` wher
 
 To migrate database run `npm run migrate.up`, `npm run prisma.pull` and `npm run prisma.generate`
 
+## Database manual backup
+
+- Use PGAdmin
+- Connect to Heroku database
+- Make a backup using next settings
+  - Select filename
+  - Format: `Custom`
+  - Role name is you user for login
+- Restore in another DB
+  - Create the role with exact name as in the backup
+  - While creating DB set newly created user as `Owner`
+  - Restore backup with next settings
+    - Format: `Custom or tar`
+    - Set filename
+    - Role name is a user with same name as in the backup
+
+## database backup using cli
+
+- Locate `pg_dump` executable file (it should be in the PostgresQL installation folder)
+  Run next command: `pg_dump {connection string} > C:\Users\frunk\projects\attendanceManager\backup\tmp`
+
 ## Tmp
 
 TODO: check user to perform data migration

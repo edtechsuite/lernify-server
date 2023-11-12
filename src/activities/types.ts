@@ -26,10 +26,6 @@ export type ActivityRecord = {
 	updatedAt: string
 }
 
-export type ActivityUpdate = Pick<
-	ActivityRecord,
-	'performerId' | 'name' | 'archived'
->
 export type ActivityCreate = Pick<
 	ActivityRecord,
 	'performerId' | 'name' | 'type'
