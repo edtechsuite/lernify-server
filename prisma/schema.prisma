@@ -40,20 +40,20 @@ model invites {
 }
 
 model organizations {
-  id                                   Int                    @id @default(autoincrement())
-  key                                  String                 @unique @db.VarChar(1000)
-  name                                 String                 @db.VarChar(1000)
-  owner                                Int
-  createdAt                            DateTime               @default(now()) @db.Timestamp(6)
-  updatedAt                            DateTime               @default(now()) @db.Timestamp(6)
-  updatedBy                            Int
-  deleted                              Boolean                @default(false)
-  activities                           activities[]
-  invites                              invites[]
-  ownerUser                            users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  updatedByUser                        users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  students                             students[]
-  users                                usersToOrganizations[]
+  id            Int                    @id @default(autoincrement())
+  key           String                 @unique @db.VarChar(1000)
+  name          String                 @db.VarChar(1000)
+  owner         Int
+  createdAt     DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime               @default(now()) @db.Timestamp(6)
+  updatedBy     Int
+  deleted       Boolean                @default(false)
+  activities    activities[]
+  invites       invites[]
+  ownerUser     users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByUser users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students      students[]
+  users         usersToOrganizations[]
 }
 
 model pgmigrations {
@@ -111,15 +111,16 @@ model usersToOrganizations {
 }
 
 model studentsToActivities {
-  id             Int         @id @default(autoincrement())
-  activityId     Int?
-  participantId  Int?
-  startDate      DateTime    @default(now()) @db.Timestamp(6)
-  endDate        DateTime?   @default(now()) @db.Timestamp(6)
-  createdAt      DateTime    @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime    @default(now()) @db.Timestamp(6)
-  updatedBy      Int
-  activity       activities? @relation(fields: [activityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  participant    students?   @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  updatedByUsers users       @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                 Int         @id @default(autoincrement())
+  activityId         Int?
+  participantId      Int?
+  startDate          DateTime    @default(now()) @db.Timestamp(6)
+  endDate            DateTime?   @default(now()) @db.Timestamp(6)
+  createdAt          DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime    @default(now()) @db.Timestamp(6)
+  updatedBy          Int
+  leaveReasonComment String?     @db.VarChar(1000)
+  activity           activities? @relation(fields: [activityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  participant        students?   @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updatedByUsers     users       @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

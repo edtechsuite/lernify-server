@@ -6,6 +6,9 @@ import { prisma } from '../utils/prisma'
 import { ActivityCreate } from './types'
 import { getActivity } from './businessLayer/getActivity'
 import { ActivityUpdate, editActivity } from './domain/editActivity'
+import { getStudentParticipation } from './domain/participation'
+import { addParticipant } from './domain/addParticipant'
+import { removeParticipant } from './domain/removeParticipant'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET
@@ -296,27 +299,11 @@ export function initHandlers(app: FastifyInstance) {
 
 			const activityId = parseInt(req.params.activityId, 10)
 			const participantId = parseInt(req.params.participantId, 10)
-			const activity = await prisma.activities.findFirstOrThrow({
-				where: {
-					organizationId: req.organization!.id,
-					id: activityId,
-				},
-			})
-			const participant = await prisma.students.findFirstOrThrow({
-				where: {
-					organization: req.organization!.id,
-					id: participantId,
-				},
-			})
-
-			await prisma.studentsToActivities.create({
-				data: {
-					participantId: participant.id,
-					activityId: activity.id,
-					startDate: new Date(),
-					endDate: null,
-					updatedBy: req.user?.id,
-				},
+			await addParticipant({
+				participantId,
+				activityId,
+				orgId: req.organization?.id,
+				userId: req.user.id,
 			})
 
 			reply.status(201).send('ok')
@@ -325,50 +312,37 @@ export function initHandlers(app: FastifyInstance) {
 
 	// Unassign participant
 	app.delete<{
-		Params: {
+		Body: {
 			activityId: string
 			participantId: string
+			leaveReasonComment: string
 		}
 		Headers: OrgHeaderEnsured
 	}>(
-		'/:activityId/participant/:participantId',
+		'/participant',
 		{
 			schema: {
-				params: {
+				body: {
 					type: 'object',
+					required: ['activityId', 'participantId', 'leaveReasonComment'],
 					properties: {
 						activityId: { type: 'string' },
 						participantId: { type: 'string' },
+						leaveReasonComment: { type: 'string' },
 					},
 				},
 			},
 			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
-			const activityId = parseInt(req.params.activityId, 10)
-			const participantId = parseInt(req.params.participantId, 10)
-			const activity = await prisma.activities.findFirstOrThrow({
-				where: {
-					organizationId: req.organization!.id,
-					id: activityId,
-				},
-			})
-			const participant = await prisma.students.findFirstOrThrow({
-				where: {
-					organization: req.organization!.id,
-					id: participantId,
-				},
-			})
-
-			await prisma.studentsToActivities.updateMany({
-				where: {
-					participantId: participant.id,
-					activityId: activity.id,
-					endDate: null,
-				},
-				data: {
-					endDate: new Date(),
-				},
+			const activityId = parseInt(req.body.activityId, 10)
+			const participantId = parseInt(req.body.participantId, 10)
+			await removeParticipant({
+				participantId,
+				activityId,
+				orgId: req.organization?.id,
+				userId: req.user!.id,
+				leaveReasonComment: req.body.leaveReasonComment,
 			})
 
 			reply.status(200).send('ok')
@@ -401,50 +375,15 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		async (req) => {
 			// TODO: check access
-			const result = await prisma.studentsToActivities.findMany({
-				where: {
-					participantId: req.query.participantId
-						? parseInt(req.query.participantId, 10)
-						: undefined,
-					activityId: req.query.activityId
-						? parseInt(req.query.activityId, 10)
-						: undefined,
-
-					...(req.query.from
-						? {
-								OR: [
-									{
-										endDate: {
-											gte: new Date(req.query.from),
-										},
-									},
-									{
-										endDate: null,
-									},
-								],
-						  }
-						: {}),
-					...(req.query.to
-						? {
-								OR: [
-									{
-										startDate: {
-											lte: new Date(req.query.to),
-										},
-									},
-								],
-						  }
-						: {}),
-				},
-				select: {
-					id: true,
-					activity: {
-						select: returnActivity,
-					},
-					startDate: true,
-					endDate: true,
-					participantId: true,
-				},
+			const result = await getStudentParticipation({
+				participantId: req.query.participantId
+					? Number(req.query.participantId)
+					: undefined,
+				activityId: req.query.activityId
+					? Number(req.query.activityId)
+					: undefined,
+				from: req.query.from,
+				to: req.query.to,
 			})
 
 			return result
