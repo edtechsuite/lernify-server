@@ -35,6 +35,8 @@ export function calculateRate(
 				participantId: participantsMap[studentOuterId].id,
 				participantName: participantsMap[studentOuterId].name,
 				rate,
+				attended: attended.filter(Boolean).length,
+				total: attended.length,
 			})
 		})
 	})
@@ -61,4 +63,6 @@ type ReportRecord = {
 	activityName: string
 	activityOuterId: string
 	rate: number
+	attended: number
+	total: number
 }
