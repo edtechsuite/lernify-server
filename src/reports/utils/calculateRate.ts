@@ -50,7 +50,7 @@ type Activity = {
 	name: string
 }
 
-type Participant = {
+export type Participant = {
 	id: number
 	outerId: string
 	name: string

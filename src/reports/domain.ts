@@ -1,6 +1,6 @@
 import { getAttendances } from '../firebase/attendances'
 import { prisma } from '../utils/prisma'
-import { calculateRate } from './utils/calculateRate'
+import { Participant, calculateRate } from './utils/calculateRate'
 import { getAttendanceMap } from './utils/getAttendanceMap'
 
 export async function reportByStudentsTags(
@@ -55,23 +55,13 @@ type ReportRecord = {
 	rate: number
 }
 
-function getParticipantsByTags(orgKey: string, tags: string[]) {
-	return prisma.students.findMany({
-		where: {
-			tags: {
-				hasEvery: tags,
-			},
-			// Only include participants from the organization
-			organizationRecord: {
-				key: orgKey,
-			},
-		},
-		select: {
-			id: true,
-			outerId: true,
-			name: true,
-		},
-	})
+async function getParticipantsByTags(orgKey: string, tags: string[]) {
+	// Case insensitive search
+	const result =
+		await prisma.$queryRaw`SELECT * FROM students WHERE ARRAY[${tags.map((t) =>
+			t.toLowerCase()
+		)}] && lower(tags::text)::text[] AND organization = (SELECT id FROM organizations where key = ${orgKey});`
+	return result as Participant[]
 }
 
 function getActivities(orgKey: string, outerIds: string[]) {
