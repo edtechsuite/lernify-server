@@ -25,6 +25,18 @@ export async function addParticipant({
 		},
 	})
 
+	const existingRecord = await prisma.studentsToActivities.findFirst({
+		where: {
+			participantId: participant.id,
+			activityId: activity.id,
+			endDate: null,
+		},
+	})
+
+	if (existingRecord) {
+		throw new Error('Participant is already assigned to the activity.')
+	}
+
 	return await prisma.studentsToActivities.create({
 		data: {
 			participantId: participant.id,
