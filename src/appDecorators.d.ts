@@ -14,5 +14,5 @@ declare module 'fastify' {
 }
 
 interface DecoratorFunc {
-	(request: FastifyRequest, reply: FastifyReply, done: () => void): string
+	(request: FastifyRequest, reply: FastifyReply, done: () => void): void
 }

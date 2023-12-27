@@ -5,11 +5,12 @@ export const isProduction = config.isProduction
 export const PORT = config.PORT
 export const dbConnectionString = config.dbConnectionString
 export const inviteTokenExpiration = config.inviteTokenExpiration
+export const environment = process.env.NODE_ENV || 'production'
 
 export function getConfig() {
 	return {
-		isProduction: process.env.NODE_ENV === 'production',
-		PORT: process.env.PORT || '4000',
+		isProduction: process.env.NODE_ENV !== 'development',
+		PORT: parseInt(process.env.PORT || '4000', 10),
 		dbConnectionString:
 			process.env.DATABASE_URL || 'postgres://postgres@localhost/postgres',
 		inviteTokenExpiration: parseInt(
