@@ -7,7 +7,10 @@ async function initializeApp() {
 	const app = await App()
 	const config = getConfig()
 
-	app.listen(config.PORT, '0.0.0.0')
+	await app.listen({
+		port: config.PORT,
+		host: '0.0.0.0',
+	})
 }
 
 initializeApp()

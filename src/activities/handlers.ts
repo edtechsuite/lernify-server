@@ -299,12 +299,20 @@ export function initHandlers(app: FastifyInstance) {
 
 			const activityId = parseInt(req.params.activityId, 10)
 			const participantId = parseInt(req.params.participantId, 10)
-			await addParticipant({
-				participantId,
-				activityId,
-				orgId: req.organization?.id,
-				userId: req.user.id,
-			})
+			try {
+				await addParticipant({
+					participantId,
+					activityId,
+					orgId: req.organization?.id,
+					userId: req.user.id,
+				})
+			} catch (error) {
+				if (error instanceof Error) {
+					reply.status(400).send(error.message)
+					return
+				}
+				throw error
+			}
 
 			reply.status(201).send('ok')
 		}
