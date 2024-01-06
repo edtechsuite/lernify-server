@@ -1,6 +1,5 @@
-import fastify from 'fastify'
 import { cert, initializeApp } from 'firebase-admin/app'
-import { environment, getConfig } from './config'
+import { getConfig } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
 import studentsService from './students'
@@ -17,6 +16,7 @@ import { databaseConnector } from './databaseConnector'
 import { setCurrentUserToRequest } from './users/setCurrentUserToRequest'
 import { setCurrentOrganizationToRequest } from './organizations/setCurrentOrganizationToRequest'
 import { Mailer } from './messaging'
+import { server } from './server'
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
 
@@ -42,9 +42,7 @@ export async function App() {
 		production: true,
 		test: false,
 	}
-	const app = fastify({
-		logger: envToLogger[environment],
-	})
+	const app = server
 	app.log.info('Initializing an application')
 
 	const config = getConfig()

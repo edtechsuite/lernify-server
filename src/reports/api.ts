@@ -1,7 +1,9 @@
-import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
 import { reportByStudentsTags } from './domain'
+import { ServerWithTypes } from '../server'
+import { reportPreview } from './domain/reportPreview'
 
-export function initHandlers(app: FastifyInstance) {
+export function initHandlers(app: ServerWithTypes) {
 	app.get<{
 		Querystring: {
 			from?: string
@@ -61,4 +63,42 @@ export function initHandlers(app: FastifyInstance) {
 			)
 		}
 	)
+
+	// TODO: should we use `from` and `to` here? Otherwise we can see some old students
+	// TODO: add result validation
+	app.post(
+		'/preview',
+		{
+			schema: {
+				body: PreviewSchema,
+			},
+		},
+		async (req) => {
+			const { filters, page, pageSize } = req.body
+			return reportPreview(req.organization!.key, filters, {
+				page: page ?? 0,
+				pageSize: pageSize ?? 10,
+			})
+		}
+	)
 }
+
+const FilterSchema = Type.Array(
+	Type.Union([
+		Type.Object({
+			field: Type.Literal('tags'),
+			value: Type.Array(Type.String()),
+			operation: Type.Union([Type.Literal('contains')]),
+		}),
+		Type.Object({
+			field: Type.Literal('name'),
+			value: Type.String(),
+			operation: Type.Union([Type.Literal('contains')]),
+		}),
+	])
+)
+const PreviewSchema = Type.Object({
+	filters: FilterSchema,
+	page: Type.Optional(Type.Number()),
+	pageSize: Type.Optional(Type.Number()),
+})
