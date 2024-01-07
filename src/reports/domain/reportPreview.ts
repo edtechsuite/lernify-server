@@ -14,6 +14,13 @@ export async function reportPreview(
 					key: orgKey,
 				},
 			},
+			include: {
+				studentsToActivities: {
+					include: {
+						activity: true,
+					},
+				},
+			},
 			// TODO: add order
 			// orderBy: {
 			// },
