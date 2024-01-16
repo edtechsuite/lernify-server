@@ -43,6 +43,24 @@ export function calculateRate(
 
 	return result
 }
+export function calculateRate2<
+	T extends {
+		outerId: string
+		activityOuterId: string
+	}
+>(records: T[], attendancesMap: AttendancesMap) {
+	return records.map((r) => {
+		const attended = attendancesMap.get(r.activityOuterId)?.get(r.outerId)
+		return {
+			...r,
+			...getRateFromAttendanceArray(attended),
+		}
+	})
+}
+
+type AttendancesMap = Map<ActivityOuterId, Map<ParticipantOuterId, boolean[]>>
+type ParticipantOuterId = string
+type ActivityOuterId = string
 
 type Activity = {
 	id: number
@@ -65,4 +83,25 @@ type ReportRecord = {
 	rate: number
 	attended: number
 	total: number
+}
+
+function getRateFromAttendanceArray(
+	attended: boolean[] | undefined = [],
+	precision = 10000
+) {
+	if (attended.length === 0) {
+		return {
+			rate: 0,
+			attended: 0,
+			total: 0,
+		}
+	}
+	return {
+		rate:
+			Math.round(
+				(attended.filter(Boolean).length / attended.length) * precision
+			) / precision,
+		attended: attended.filter(Boolean).length,
+		total: attended.length,
+	}
 }
