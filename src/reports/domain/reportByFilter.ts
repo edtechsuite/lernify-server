@@ -20,10 +20,7 @@ export async function reportByFilter(
 	const attendances = await getAttendances(organization.key, range)
 	const [attendanceMap] = getAttendanceMap(attendances)
 
-	return {
-		data: calculateRate2(records.data, attendanceMap),
-		total: records.total,
-	}
+	return calculateRate2(records.data, attendanceMap)
 }
 
 type Range = { from: Date; to: Date }
