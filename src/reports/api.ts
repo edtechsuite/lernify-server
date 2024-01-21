@@ -65,8 +65,6 @@ export function initHandlers(app: ServerWithTypes) {
 		}
 	)
 
-	// TODO: should we use `from` and `to` here? Otherwise we can see some old students
-	// TODO: add result validation
 	app.post(
 		'/preview',
 		{
