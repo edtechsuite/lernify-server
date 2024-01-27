@@ -1,7 +1,10 @@
-import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
 import { reportByStudentsTags } from './domain'
+import { ServerWithTypes } from '../server'
+import { reportPreview } from './domain/reportPreview'
+import { reportByFilter } from './domain/reportByFilter'
 
-export function initHandlers(app: FastifyInstance) {
+export function initHandlers(app: ServerWithTypes) {
 	app.get<{
 		Querystring: {
 			from?: string
@@ -61,4 +64,97 @@ export function initHandlers(app: FastifyInstance) {
 			)
 		}
 	)
+
+	app.post(
+		'/preview',
+		{
+			schema: {
+				body: PreviewSchema,
+			},
+		},
+		async (req) => {
+			const { filters, page, pageSize, from, to } = req.body
+			const fromDate = new Date(from)
+			const toDate = new Date(to)
+			if (!fromDate || !toDate) {
+				throw new Error('Invalid date format')
+			}
+			const result = await reportPreview(
+				req.organization!.id,
+				filters,
+				{ from: new Date(from), to: new Date(to) },
+				{
+					page: page ?? 0,
+					pageSize: pageSize ?? 10,
+				}
+			)
+			return result
+		}
+	)
+
+	app.post(
+		'/byFilter',
+		{
+			schema: {
+				body: ReportSchema,
+			},
+		},
+		async (req) => {
+			const { filters, from, to } = req.body
+			const fromDate = new Date(from)
+			const toDate = new Date(to)
+			if (!fromDate || !toDate) {
+				throw new Error('Invalid date format')
+			}
+			return reportByFilter(req.organization!, filters, {
+				from: fromDate,
+				to: toDate,
+			})
+		}
+	)
 }
+
+const FilterSchema = Type.Array(
+	Type.Union([
+		Type.Object({
+			field: Type.Literal('tags'),
+			value: Type.Array(Type.String()),
+			operation: Type.Union([Type.Literal('contains')]),
+		}),
+		Type.Object({
+			field: Type.Literal('name'),
+			value: Type.String(),
+			operation: Type.Union([
+				Type.Literal('contains'),
+				Type.Literal('startsWith'),
+				Type.Literal('endsWith'),
+			]),
+		}),
+		Type.Object({
+			field: Type.Literal('group'),
+			value: Type.String(),
+			operation: Type.Union([
+				Type.Literal('contains'),
+				Type.Literal('startsWith'),
+				Type.Literal('endsWith'),
+			]),
+		}),
+	])
+)
+const PreviewSchema = Type.Object({
+	filters: FilterSchema,
+	page: Type.Optional(Type.Number()),
+	pageSize: Type.Optional(
+		Type.Number({
+			minimum: 1,
+			maximum: 100,
+		})
+	),
+	from: Type.String(),
+	to: Type.String(),
+})
+const ReportSchema = Type.Object({
+	filters: FilterSchema,
+	from: Type.String(),
+	to: Type.String(),
+})
