@@ -65,6 +65,18 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
+	app.get(
+		'/me',
+		{
+			preHandler: [app.verifyJWT],
+		},
+		async (req) => {
+			const { id } = req.profile!
+			const profiles = getProfile(id)
+			return profiles
+		}
+	)
+
 	app.get<{
 		Params: {
 			id: string
