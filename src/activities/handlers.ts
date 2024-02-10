@@ -155,18 +155,28 @@ export function initHandlers(app: FastifyInstance) {
 			},
 			preHandler: [app.verifyOrgAccess],
 		},
-		async (req) => {
-			const result = await prisma.activities.create({
-				data: {
-					...req.body,
-					outerId: nanoid(),
-					organizationId: req.organization!.id,
-					updatedBy: req.user!.id,
-				},
-				select: returnActivity,
-			})
-
-			return result
+		async (req, reply) => {
+			try {
+				const result = await prisma.activities.create({
+					data: {
+						...req.body,
+						outerId: nanoid(),
+						organizationId: req.organization!.id,
+						updatedBy: req.user!.id,
+					},
+					select: returnActivity,
+				})
+				return result
+			} catch (error) {
+				if (
+					error instanceof PrismaClientKnownRequestError &&
+					error.code === 'P2002'
+				) {
+					return reply.code(400).send(error.message)
+				} else {
+					throw error
+				}
+			}
 		}
 	)
 
