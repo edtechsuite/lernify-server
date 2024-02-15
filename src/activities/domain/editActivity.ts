@@ -1,6 +1,11 @@
 import { FastifyRequest } from 'fastify'
 import { prisma } from '../../utils/prisma'
 import { ActivityRecord } from '../types'
+import {
+	addEvent,
+	ActivityArchivedUpdatedEvent,
+	EditActivityEvent,
+} from '../../events'
 
 export async function editActivity(
 	id: number,
@@ -53,6 +58,23 @@ export async function editActivity(
 		}
 	}
 
+	await addEvent(
+		req.organization!.key,
+		new EditActivityEvent(new Date(), updated.id, req.user!.id, {
+			id: updated.id,
+		})
+	)
+	if (existing.archived !== updated.archived) {
+		await addEvent(
+			req.organization!.key,
+			new ActivityArchivedUpdatedEvent({
+				data: updated.archived,
+				date: new Date(),
+				object: updated.id,
+				subject: req.user!.id,
+			})
+		)
+	}
 	return updated
 }
 

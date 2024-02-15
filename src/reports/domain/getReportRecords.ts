@@ -94,9 +94,19 @@ function getRequestPart(filter: Filter) {
 	const { field, operation, value } = filter
 	switch (field) {
 		case 'tags':
-			return Prisma.sql`ARRAY[${Prisma.join(
-				value.map((t) => t.toLowerCase())
-			)}] && lower(tags::text)::text[]`
+			// Case insensitive search with trimming spaces
+			return Prisma.sql`
+			ARRAY[${Prisma.join(value.map((t) => t.toLowerCase()))}] && (
+				select
+					ARRAY_AGG(trim(lower(tag))) tags
+				from (
+					select id, unnest(tags) tag
+					from students
+				) as st
+				where s.id = st.id
+				group by id
+			)
+			`
 		case 'name':
 			return Prisma.sql`LOWER(s.name) ${stringOperations(operation, value)}`
 		case 'group':

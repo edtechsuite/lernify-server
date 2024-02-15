@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { Type } from '@fastify/type-provider-typebox'
 import { nanoid } from 'nanoid'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { OrgHeaderEnsured } from '../auth/types'
@@ -21,12 +22,9 @@ export function initHandlers(app: FastifyInstance) {
 		method: 'GET',
 		url: `/:id`,
 		schema: {
-			params: {
-				type: 'object',
-				properties: {
-					id: { type: 'string' },
-				},
-			},
+			params: Type.Object({
+				id: Type.String(),
+			}),
 		},
 		preHandler: [app.verifyOrgAccess],
 		handler: async (req, reply) => {
@@ -157,18 +155,28 @@ export function initHandlers(app: FastifyInstance) {
 			},
 			preHandler: [app.verifyOrgAccess],
 		},
-		async (req) => {
-			const result = await prisma.activities.create({
-				data: {
-					...req.body,
-					outerId: nanoid(),
-					organizationId: req.organization!.id,
-					updatedBy: req.user!.id,
-				},
-				select: returnActivity,
-			})
-
-			return result
+		async (req, reply) => {
+			try {
+				const result = await prisma.activities.create({
+					data: {
+						...req.body,
+						outerId: nanoid(),
+						organizationId: req.organization!.id,
+						updatedBy: req.user!.id,
+					},
+					select: returnActivity,
+				})
+				return result
+			} catch (error) {
+				if (
+					error instanceof PrismaClientKnownRequestError &&
+					error.code === 'P2002'
+				) {
+					return reply.code(400).send(error.message)
+				} else {
+					throw error
+				}
+			}
 		}
 	)
 

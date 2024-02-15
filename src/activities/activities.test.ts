@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { App } from '../app'
 
 jest.mock('../utils/prisma')
+jest.mock('../firebase/events')
 
 describe('Activities', () => {
 	let app: FastifyInstance = undefined as unknown as FastifyInstance

@@ -199,6 +199,7 @@ export function initHandlers(app: FastifyInstance) {
 			try {
 				const result = await createStudentQuery(pool, {
 					...req.body,
+					tags: req.body.tags.map((t) => t.trim()),
 					organization: req.organization.id,
 					updatedBy: req.user.id,
 				})
@@ -261,6 +262,7 @@ export function initHandlers(app: FastifyInstance) {
 
 			const result = await updateStudentQuery(pool, id, {
 				...req.body,
+				tags: req.body.tags.map((t) => t.trim()),
 				updatedBy: req.user.id,
 			})
 
