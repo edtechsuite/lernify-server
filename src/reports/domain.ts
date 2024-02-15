@@ -56,11 +56,20 @@ type ReportRecord = {
 }
 
 async function getParticipantsByTags(orgKey: string, tags: string[]) {
-	// Case insensitive search
+	// Case insensitive search with trimming spaces
 	const result =
-		await prisma.$queryRaw`SELECT * FROM students WHERE ARRAY[${tags.map((t) =>
-			t.toLowerCase()
-		)}] && lower(tags::text)::text[] AND organization = (SELECT id FROM organizations where key = ${orgKey});`
+		await prisma.$queryRaw`SELECT * FROM students as s WHERE ARRAY[${tags.map(
+			(t) => t.toLowerCase()
+		)}] && (
+			select
+				ARRAY_AGG(trim(lower(tag))) tags
+			from (
+				select id, unnest(tags) tag
+				from students
+			) as st
+			where s.id = st.id
+			group by id
+		) AND organization = (SELECT id FROM organizations where key = ${orgKey});`
 	return result as Participant[]
 }
 

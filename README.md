@@ -83,6 +83,17 @@ To migrate database run `npm run migrate.up`, `npm run prisma.pull` and `npm run
 - Locate `pg_dump` executable file (it should be in the PostgresQL installation folder)
   Run next command: `pg_dump {connection string} > C:\Users\frunk\projects\attendanceManager\backup\tmp`
 
+## Architecture
+
+### Modules
+
+`src` folder contains `module`s folders. Every folder should contain next files/folder (depending on logic amount):
+
+- `index`: initial module setup. Mostly related to framework
+- `domain`: business logic
+- `utils`: module related internal utilities
+- `api`: endpoints
+
 ## Tmp
 
 TODO: check user to perform data migration
