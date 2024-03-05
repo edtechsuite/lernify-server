@@ -122,6 +122,9 @@ export function initHandlers(app: FastifyInstance) {
 						},
 					},
 				},
+				orderBy: {
+					updatedAt: 'desc',
+				},
 			})
 
 			return result

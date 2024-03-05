@@ -18,7 +18,9 @@
 		"test": "jest",
 		"test.watch": "jest --watch",
 		"cleanBuildFolder": "rimraf build/",
-		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css build/"
+		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css build/",
+		"db.dump": "node ./dbDump.js",
+		"db.restore": "node ./dbRestore.js"
 	},
 	"repository": {
 		"type": "git",
