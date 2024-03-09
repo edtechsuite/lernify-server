@@ -17,6 +17,7 @@ import { setCurrentUserToRequest } from './users/setCurrentUserToRequest'
 import { setCurrentOrganizationToRequest } from './organizations/setCurrentOrganizationToRequest'
 import { Mailer } from './messaging'
 import { server } from './server'
+import { dumpMaker } from './dumpMaker'
 // https://github.com/ajv-validator/ajv
 // https://github.com/sinclairzx81/typebox
 
@@ -79,6 +80,8 @@ export async function App() {
 	await app.register(studentsService, { prefix: '/students' })
 	await app.register(activitiesService, { prefix: '/activities' })
 	await app.register(reportsService, { prefix: '/report' })
+
+	await app.register(dumpMaker, { prefix: '/dump' })
 
 	app.after(routes)
 
