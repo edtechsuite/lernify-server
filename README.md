@@ -80,8 +80,23 @@ To migrate database run `npm run migrate.up`, `npm run prisma.pull` and `npm run
 
 ## database backup using cli
 
-- Locate `pg_dump` executable file (it should be in the PostgresQL installation folder)
-  Run next command: `pg_dump {connection string} > C:\Users\frunk\projects\attendanceManager\backup\tmp`
+`.env` file should have `PG_EXECUTABLES` variable:
+
+```
+PG_EXECUTABLES={path to folder with executables}
+```
+
+- Run following command to backup
+
+```
+npm run db.dump {connection string}
+```
+
+- Run following command to restore. Be aware, restoration will drop everything first. Probably need to add the same `user` who is owner of the database from backup
+
+```
+npm run db.restore {connection string} "{path to backup file (*.sql)}"
+```
 
 ## Architecture
 
