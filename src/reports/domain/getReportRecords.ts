@@ -80,7 +80,7 @@ function makeFilterSql(filters: Filter[], range: Range, orgId: number) {
 				Prisma.sql`sta."startDate" < ${range.to}`,
 				Prisma.sql`(${Prisma.join(
 					[
-						Prisma.sql`sta."endDate" IS NOT NULL`,
+						Prisma.sql`sta."endDate" IS NULL`,
 						Prisma.sql`sta."endDate" > ${range.from}`,
 					],
 					' OR '
