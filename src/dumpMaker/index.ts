@@ -19,8 +19,7 @@ function initDumpHandlers(app: any) {
 			preHandler: [app.ensureUserIsSystemAdmin],
 		},
 		async () => {
-			const res = await makePgDump()
-			return `dump download path: \n${res}`
+			return await makePgDump()
 		}
 	)
 }
