@@ -52,6 +52,7 @@ export function initHandlers(app: FastifyInstance) {
 			date?: string
 			archived?: 'true' | 'false' | 'all'
 			deleted?: 'true' | 'false' | 'all'
+			include?: string[]
 		}
 		Headers: OrgHeaderEnsured
 	}>('/', {
@@ -64,6 +65,12 @@ export function initHandlers(app: FastifyInstance) {
 					participantId: { type: 'string' },
 					archived: { enum: ['true', 'false', 'all'] },
 					deleted: { enum: ['true', 'false', 'all'] },
+					include: {
+						type: 'array',
+						items: {
+							type: 'string',
+						},
+					},
 				},
 			},
 		},
@@ -75,6 +82,7 @@ export function initHandlers(app: FastifyInstance) {
 				deleted = 'false',
 				participantId,
 				date,
+				include,
 			} = req.query
 			const result = await prisma.activities.findMany({
 				where: {
@@ -121,6 +129,19 @@ export function initHandlers(app: FastifyInstance) {
 							participantId: participantId ? Number(participantId) : undefined,
 						},
 					},
+					...(include?.includes('performer')
+						? {
+								performer: {
+									include: {
+										organizationsConnections: {
+											where: {
+												organizationId: req.organization!.id,
+											},
+										},
+									},
+								},
+						  }
+						: {}),
 				},
 				orderBy: {
 					updatedAt: 'desc',
