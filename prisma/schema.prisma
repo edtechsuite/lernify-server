@@ -49,6 +49,7 @@ model organizations {
   updatedBy     Int
   deleted       Boolean                @default(false)
   activities    activities[]
+  api_tokens    api_tokens?
   invites       invites[]
   ownerUser     users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedByUser users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -127,8 +128,10 @@ model studentsToActivities {
 }
 
 model api_tokens {
-  id        Int      @id @default(autoincrement())
-  lastReset DateTime @default(now()) @db.Timestamp(6)
-  userId    Int
-  user      users    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id             String        @id @db.Uuid
+  organizationId Int           @unique
+  lastReset      DateTime      @default(now()) @db.Timestamp(6)
+  userId         Int
+  organization   organizations @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           users         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

@@ -5,7 +5,16 @@ exports.shorthands = undefined
 const tableName = 'api_tokens'
 exports.up = (pgm) => {
 	pgm.createTable(tableName, {
-		id: 'id',
+		id: {
+			type: 'uuid',
+			primaryKey: true,
+		},
+		organizationId: {
+			type: 'integer',
+			notNull: true,
+			unique: true,
+			references: 'organizations(id)',
+		},
 		lastReset: {
 			type: 'timestamp',
 			notNull: true,
