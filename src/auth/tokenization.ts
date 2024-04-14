@@ -16,3 +16,7 @@ export function validateToken(
 ) {
 	return tokenize.validate(token, callback)
 }
+
+export function getLastTokenReset(date: Date) {
+	return date.getTime()
+}
