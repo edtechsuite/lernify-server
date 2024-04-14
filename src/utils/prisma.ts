@@ -1,7 +1,17 @@
 import { PrismaClient } from '@prisma/client'
 import { Prisma } from '@prisma/client'
+import { prismaDebug } from '../config'
 
-export const prisma = new PrismaClient()
+export const prisma = new PrismaClient({
+	log: prismaDebug
+		? [
+				{
+					emit: 'stdout',
+					level: 'query',
+				},
+		  ]
+		: [],
+})
 
 export function isUniqueConstraintFailedError(
 	error: any
