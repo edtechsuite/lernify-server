@@ -5,7 +5,7 @@ import { generateToken } from '../auth/tokenization'
 import { prisma } from '../utils/prisma'
 
 export function initHandlers(app: B2BFastifyInstance) {
-	app.get('/generateApiToken', {
+	app.post('/generateApiToken', {
 		preHandler: [app.verifyOrgAccess],
 		handler: async (req) => {
 			const tokenData = await prisma.api_tokens.upsert({
