@@ -18,14 +18,13 @@ async function verifyApiToken(request: FastifyRequest, reply: FastifyReply) {
 	}
 
 	try {
-		const profile = await validateToken(token, async (id, prefix) => {
-			return await getProfileFromToken(id)
-		})
+		const profile = await validateToken(token)
 
-		if (!profile) {
+		if (!profile || !profile.user || !profile.organization) {
 			return reply.status(401).send('Unauthorized')
 		}
-		request.b2bProfile = profile
+		request.b2bProfile = profile.user
+		request.b2bOrganization = profile.organization
 	} catch (error) {
 		return reply.status(401).send('Unauthorized')
 	}
@@ -34,19 +33,15 @@ async function verifyApiToken(request: FastifyRequest, reply: FastifyReply) {
 async function getProfileFromToken(id: string) {
 	const tokenData = await prisma.api_tokens.findUnique({
 		where: { id },
+		include: { user: true, organization: true },
 	})
 
 	if (!tokenData) {
 		return null
 	}
-	const user = await prisma.users.findUnique({
-		where: { id: tokenData.userId },
-	})
-	if (!user) {
-		return null
-	}
 	return {
-		...user,
+		user: tokenData.user,
+		organization: tokenData.organization,
 		lastTokenReset: getLastTokenReset(tokenData.lastReset),
 	}
 }
@@ -57,6 +52,16 @@ export interface B2BFastifyInstance extends ServerWithTypes {
 declare module 'fastify' {
 	interface FastifyRequest {
 		b2bProfile: UserPrisma | null
+		b2bOrganization: {
+			id: number
+			key: string
+			name: string
+			owner: number
+			createdAt: Date
+			updatedAt: Date
+			updatedBy: number
+			deleted: boolean
+		} | null
 	}
 }
 
