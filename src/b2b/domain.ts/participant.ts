@@ -1,3 +1,4 @@
+import { isNotNull } from '../../utils/guards'
 import { prisma } from '../../utils/prisma'
 
 type GetParticipantsParams = {
@@ -11,15 +12,54 @@ type GetParticipantsParams = {
 export async function getParticipants(params: GetParticipantsParams) {
 	const { organization, page, pageSize } = params
 
+	const where = { deleted: false, organization }
 	const [data, total] = await prisma.$transaction([
 		prisma.students.findMany({
-			where: { deleted: false, organization },
+			where,
 			skip: page * pageSize,
 			take: pageSize,
+			select: {
+				id: true,
+				name: true,
+				tags: true,
+				studentsToActivities: {
+					where: {
+						endDate: null,
+					},
+					include: {
+						activity: {
+							select: {
+								id: true,
+								name: true,
+								performer: {
+									select: {
+										id: true,
+										name: true,
+										email: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		}),
 		prisma.students.count({
-			where: { deleted: false, organization },
+			where,
 		}),
 	])
-	return [data, total] as const
+
+	return [
+		data.map(({ studentsToActivities, ...student }) => {
+			const activities = studentsToActivities
+				.map((s) => s.activity)
+				.filter(isNotNull)
+
+			return {
+				...student,
+				activities,
+			}
+		}),
+		total,
+	] as const
 }
