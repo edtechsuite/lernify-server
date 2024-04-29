@@ -67,6 +67,5 @@ async function getArchivedEvent(orgKey: string, activityId: number) {
 		},
 		{ limit: 1, offset: 0 }
 	)
-	console.log('=-= 🚀 ~ getArchivedEvent ~ archivedEvents:', archivedEvents)
 	return archivedEvents.at(0)
 }

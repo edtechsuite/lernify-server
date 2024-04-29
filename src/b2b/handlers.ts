@@ -19,7 +19,7 @@ export function initB2BTokenProtected(app: B2BFastifyInstance) {
 			const [list, total] = await getParticipants({
 				page,
 				pageSize,
-				organization: req.b2bOrganization!.id,
+				organization: req.b2bOrganization!,
 			})
 
 			return {
