@@ -37,6 +37,8 @@
 		"@fastify/auth": "^4.6.1",
 		"@fastify/cors": "^8.5.0",
 		"@fastify/postgres": "^4.0.0",
+		"@fastify/swagger": "^8.14.0",
+		"@fastify/swagger-ui": "^3.0.0",
 		"@fastify/type-provider-typebox": "^3.5.0",
 		"@prisma/client": "^5.12.1",
 		"@tsconfig/node17": "^1.0.0",

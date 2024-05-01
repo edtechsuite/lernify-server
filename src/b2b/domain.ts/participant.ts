@@ -29,8 +29,9 @@ export async function getParticipants(params: GetParticipantsParams) {
 			.map((s) => s.activity)
 			.filter(isNotNull)
 
+		const { outerId, ...studentsRest } = student
 		return {
-			...student,
+			...studentsRest,
 			activities: parseActivities(
 				activities,
 				student,

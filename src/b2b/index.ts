@@ -2,11 +2,13 @@ import { FastifyInstance } from 'fastify'
 import { B2BFastifyInstance, initDecorators } from './decorators'
 import { initUsersAuthProtectedHandlers } from './usersHandlers'
 import { initB2BTokenProtected } from './handlers'
+import { initiateOpenApi } from './openApi'
 
-export default (app: FastifyInstance, opts: any, done: () => void) => {
+export default async (app: FastifyInstance, opts: any) => {
 	const decoratedApp = initDecorators(app)
 
 	initUsersAuthProtectedHandlers(decoratedApp)
+	await initiateOpenApi(decoratedApp)
 
 	decoratedApp.register((app, _, done) => {
 		initB2BTokenProtected(app as B2BFastifyInstance)
@@ -14,6 +16,4 @@ export default (app: FastifyInstance, opts: any, done: () => void) => {
 	})
 
 	decoratedApp.log.info('"b2b" service initialized')
-
-	done()
 }

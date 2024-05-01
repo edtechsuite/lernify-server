@@ -6,6 +6,7 @@ export const paginationSchemaPart = {
 		Type.Number({
 			minimum: 1,
 			maximum: 100,
+			default: 10,
 		})
 	),
 }

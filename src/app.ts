@@ -89,6 +89,7 @@ export async function App() {
 	await app.register(dumpMaker, { prefix: '/dump' })
 
 	app.after(routes)
+	await app.ready()
 
 	function routes() {
 		app.get('/ping', async function (req, reply) {
