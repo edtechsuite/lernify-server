@@ -49,6 +49,7 @@ model organizations {
   updatedBy     Int
   deleted       Boolean                @default(false)
   activities    activities[]
+  api_tokens    api_tokens?
   invites       invites[]
   ownerUser     users                  @relation("organizations_ownerTousers", fields: [owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedByUser users                  @relation("organizations_updatedByTousers", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -86,13 +87,14 @@ model users {
   systemRole                                                 String?                @db.VarChar(100)
   activities_activities_performerIdTousers                   activities[]           @relation("activities_performerIdTousers")
   activities_activities_updatedByTousers                     activities[]           @relation("activities_updatedByTousers")
+  api_tokens                                                 api_tokens[]
   invites                                                    invites[]
   organizations_organizations_ownerTousers                   organizations[]        @relation("organizations_ownerTousers")
   organizations_organizations_updatedByTousers               organizations[]        @relation("organizations_updatedByTousers")
   students                                                   students[]
   studentsToActivities                                       studentsToActivities[]
   usersToOrganizations_usersToOrganizations_updatedByTousers usersToOrganizations[] @relation("usersToOrganizations_updatedByTousers")
-  organizationsConnections    usersToOrganizations[] @relation("usersToOrganizations_userIdTousers")
+  organizationsConnections                                   usersToOrganizations[] @relation("usersToOrganizations_userIdTousers")
 }
 
 model usersToOrganizations {
@@ -123,4 +125,13 @@ model studentsToActivities {
   activity           activities? @relation(fields: [activityId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   participant        students?   @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   updatedByUsers     users       @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model api_tokens {
+  id             String        @id @db.Uuid
+  organizationId Int           @unique
+  lastReset      DateTime      @default(now()) @db.Timestamp(6)
+  userId         Int
+  organization   organizations @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           users         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

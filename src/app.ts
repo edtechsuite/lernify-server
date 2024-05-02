@@ -1,4 +1,5 @@
 import { cert, initializeApp } from 'firebase-admin/app'
+import '@fastify/auth'
 import { getConfig } from './config'
 import authService from './auth/index'
 import organizationsService from './organizations'
@@ -7,6 +8,7 @@ import activitiesService from './activities'
 import reportsService from './reports'
 import usersService from './users'
 import profilesService from './profiles'
+import b2b from './b2b'
 import { setProfileToRequest } from './profiles/setProfileToRequest'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
@@ -57,6 +59,7 @@ export async function App() {
 	})
 	app.register(require('@fastify/cors'))
 
+	app.register(require('@fastify/auth'))
 	// These decorators should be initialized before other handlers
 	// TODO: use plugin
 	decorateWithAuth(app)
@@ -81,9 +84,12 @@ export async function App() {
 	await app.register(activitiesService, { prefix: '/activities' })
 	await app.register(reportsService, { prefix: '/report' })
 
+	await app.register(b2b, { prefix: '/api/b2b' })
+
 	await app.register(dumpMaker, { prefix: '/dump' })
 
 	app.after(routes)
+	await app.ready()
 
 	function routes() {
 		app.get('/ping', async function (req, reply) {
