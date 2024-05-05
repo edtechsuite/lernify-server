@@ -1,4 +1,8 @@
-import type { GraphQLResolveInfo } from 'graphql'
+import type {
+  GraphQLResolveInfo,
+  GraphQLScalarType,
+  GraphQLScalarTypeConfig,
+} from 'graphql'
 import type { MercuriusContext } from 'mercurius'
 export type Maybe<T> = T | null
 export type InputMaybe<T> = Maybe<T>
@@ -26,6 +30,7 @@ export type Scalars = {
   Boolean: boolean
   Int: number
   Float: number
+  DateTime: any
   _FieldSet: any
 }
 
@@ -38,6 +43,38 @@ export type Activity = {
   __typename?: 'Activity'
   id: Scalars['Int']
   name: Scalars['String']
+  type: Scalars['String']
+  outerId: Scalars['String']
+  deleted: Scalars['Boolean']
+  createdAt: Scalars['DateTime']
+  updatedAt: Scalars['DateTime']
+  updatedBy: Scalars['Int']
+  updatedByUser?: Maybe<User>
+  archived: Scalars['Boolean']
+  organizationId: Scalars['Int']
+  organization: Organization
+  performerId?: Maybe<Scalars['Int']>
+  performer?: Maybe<User>
+  participants: Array<Participants>
+}
+
+export type Organization = {
+  __typename?: 'Organization'
+  id: Scalars['Int']
+}
+
+export type User = {
+  __typename?: 'User'
+  id: Scalars['Int']
+  name: Scalars['String']
+  email: Scalars['String']
+  createdAt: Scalars['DateTime']
+  performingActivities: Array<Activity>
+}
+
+export type Participants = {
+  __typename?: 'Participants'
+  id: Scalars['Int']
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
@@ -145,6 +182,10 @@ export type ResolversTypes = {
   Int: ResolverTypeWrapper<Scalars['Int']>
   String: ResolverTypeWrapper<Scalars['String']>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>
+  Organization: ResolverTypeWrapper<Organization>
+  User: ResolverTypeWrapper<User>
+  Participants: ResolverTypeWrapper<Participants>
+  DateTime: ResolverTypeWrapper<Scalars['DateTime']>
 }
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -154,6 +195,10 @@ export type ResolversParentTypes = {
   Int: Scalars['Int']
   String: Scalars['String']
   Boolean: Scalars['Boolean']
+  Organization: Organization
+  User: User
+  Participants: Participants
+  DateTime: Scalars['DateTime']
 }
 
 export type QueryResolvers<
@@ -173,12 +218,78 @@ export type ActivityResolvers<
 > = {
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  outerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  updatedBy?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  updatedByUser?: Resolver<
+    Maybe<ResolversTypes['User']>,
+    ParentType,
+    ContextType
+  >
+  archived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>
+  organizationId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  organization?: Resolver<
+    ResolversTypes['Organization'],
+    ParentType,
+    ContextType
+  >
+  performerId?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>
+  performer?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>
+  participants?: Resolver<
+    Array<ResolversTypes['Participants']>,
+    ParentType,
+    ContextType
+  >
   isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type OrganizationResolvers<
+  ContextType = MercuriusContext,
+  ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']
+> = {
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type UserResolvers<
+  ContextType = MercuriusContext,
+  ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']
+> = {
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>
+  performingActivities?: Resolver<
+    Array<ResolversTypes['Activity']>,
+    ParentType,
+    ContextType
+  >
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export type ParticipantsResolvers<
+  ContextType = MercuriusContext,
+  ParentType extends ResolversParentTypes['Participants'] = ResolversParentTypes['Participants']
+> = {
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}
+
+export interface DateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
+  name: 'DateTime'
 }
 
 export type Resolvers<ContextType = MercuriusContext> = {
   Query?: QueryResolvers<ContextType>
   Activity?: ActivityResolvers<ContextType>
+  Organization?: OrganizationResolvers<ContextType>
+  User?: UserResolvers<ContextType>
+  Participants?: ParticipantsResolvers<ContextType>
+  DateTime?: GraphQLScalarType
 }
 
 export type Loader<TReturn, TObj, TParams, TContext> = (
@@ -206,6 +317,35 @@ export interface Loaders<
   Activity?: {
     id?: LoaderResolver<Scalars['Int'], Activity, {}, TContext>
     name?: LoaderResolver<Scalars['String'], Activity, {}, TContext>
+    type?: LoaderResolver<Scalars['String'], Activity, {}, TContext>
+    outerId?: LoaderResolver<Scalars['String'], Activity, {}, TContext>
+    deleted?: LoaderResolver<Scalars['Boolean'], Activity, {}, TContext>
+    createdAt?: LoaderResolver<Scalars['DateTime'], Activity, {}, TContext>
+    updatedAt?: LoaderResolver<Scalars['DateTime'], Activity, {}, TContext>
+    updatedBy?: LoaderResolver<Scalars['Int'], Activity, {}, TContext>
+    updatedByUser?: LoaderResolver<Maybe<User>, Activity, {}, TContext>
+    archived?: LoaderResolver<Scalars['Boolean'], Activity, {}, TContext>
+    organizationId?: LoaderResolver<Scalars['Int'], Activity, {}, TContext>
+    organization?: LoaderResolver<Organization, Activity, {}, TContext>
+    performerId?: LoaderResolver<Maybe<Scalars['Int']>, Activity, {}, TContext>
+    performer?: LoaderResolver<Maybe<User>, Activity, {}, TContext>
+    participants?: LoaderResolver<Array<Participants>, Activity, {}, TContext>
+  }
+
+  Organization?: {
+    id?: LoaderResolver<Scalars['Int'], Organization, {}, TContext>
+  }
+
+  User?: {
+    id?: LoaderResolver<Scalars['Int'], User, {}, TContext>
+    name?: LoaderResolver<Scalars['String'], User, {}, TContext>
+    email?: LoaderResolver<Scalars['String'], User, {}, TContext>
+    createdAt?: LoaderResolver<Scalars['DateTime'], User, {}, TContext>
+    performingActivities?: LoaderResolver<Array<Activity>, User, {}, TContext>
+  }
+
+  Participants?: {
+    id?: LoaderResolver<Scalars['Int'], Participants, {}, TContext>
   }
 }
 declare module 'mercurius' {

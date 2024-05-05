@@ -21,13 +21,68 @@ export default async (app: ServerWithTypes) => {
 					return await ctx.prisma.activities.findMany({
 						where: {
 							deleted: false,
+							organizationId: ctx.organization.id,
+						},
+					})
+				},
+			},
+			Activity: {
+				updatedByUser: async (parent, _args, ctx) => {
+					// TODO: should we see a user if he isn't in the organization anymore?
+					// TODO: should we see a user if he is a superadmin?
+					return await ctx.prisma.users.findUnique({
+						where: {
+							id: parent.updatedBy,
+						},
+					})
+				},
+				performer: async (parent, _args, ctx) => {
+					if (!parent.performerId) {
+						return null
+					}
+					return await ctx.prisma.users.findUnique({
+						where: {
+							id: parent.performerId,
+						},
+					})
+				},
+				organization: async (parent, _args, ctx) => {
+					const org = await ctx.prisma.organizations.findUnique({
+						where: {
+							id: parent.organizationId,
+						},
+					})
+					if (!org) {
+						throw new Error('Organization not found')
+					}
+					return org
+				},
+				participants: async (parent, _args, ctx) => {
+					return await ctx.prisma.students.findMany({
+						where: {
+							studentsToActivities: {
+								some: {
+									activityId: parent.id,
+									endDate: null,
+								},
+							},
+						},
+					})
+				},
+			},
+			User: {
+				performingActivities: async (parent, _args, ctx) => {
+					return await ctx.prisma.activities.findMany({
+						where: {
+							performerId: parent.id,
+							organizationId: ctx.organization.id,
 						},
 					})
 				},
 			},
 		},
 		context: (request, reply) => {
-			return { prisma }
+			return { prisma, organization: request.organization }
 		},
 		graphiql: true,
 	})
@@ -43,5 +98,10 @@ export default async (app: ServerWithTypes) => {
 declare module 'mercurius' {
 	interface MercuriusContext {
 		prisma: typeof prisma
+		organization: {
+			id: number
+			key: string
+			name: string
+		}
 	}
 }
