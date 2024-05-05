@@ -6,6 +6,13 @@ import schema from './schema'
 import { prisma } from '../utils/prisma'
 
 export default async (app: ServerWithTypes) => {
+	// Add authentication to GraphQL requests
+	app.addHook('onRoute', (routeOptions) => {
+		if (routeOptions.url === '/graphql' && routeOptions.method === 'POST') {
+			routeOptions.preValidation = [app.verifyOrgAccess]
+		}
+	})
+
 	app.register(mercurius, {
 		schema,
 		resolvers: {
