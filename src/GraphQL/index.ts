@@ -2,21 +2,25 @@ import path from 'path'
 import mercurius from 'mercurius'
 import { codegenMercurius, gql } from 'mercurius-codegen'
 import { ServerWithTypes } from '../server'
+import schema from './schema'
+import { prisma } from '../utils/prisma'
 
 export default async (app: ServerWithTypes) => {
 	app.register(mercurius, {
-		schema: gql`
-			type Query {
-				hello(greetings: String!): String!
-			}
-		`,
+		schema,
 		resolvers: {
 			Query: {
-				hello(_root, { greetings }) {
-					// greetings ~ string
-					return 'Hello World'
+				async activities(_parent, args, ctx) {
+					return await ctx.prisma.activities.findMany({
+						where: {
+							deleted: false,
+						},
+					})
 				},
 			},
+		},
+		context: (request, reply) => {
+			return { prisma }
 		},
 		graphiql: true,
 	})
@@ -27,4 +31,10 @@ export default async (app: ServerWithTypes) => {
 	}).catch(console.error)
 
 	app.log.info('"GraphQL" service initialized')
+}
+
+declare module 'mercurius' {
+	interface MercuriusContext {
+		prisma: typeof prisma
+	}
 }

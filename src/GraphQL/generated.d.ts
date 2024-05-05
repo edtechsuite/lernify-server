@@ -19,9 +19,6 @@ export type ResolverFn<TResult, TParent, TContext, TArgs> = (
 ) =>
   | Promise<import('mercurius-codegen').DeepPartial<TResult>>
   | import('mercurius-codegen').DeepPartial<TResult>
-export type RequireFields<T, K extends keyof T> = Omit<T, K> & {
-  [P in K]-?: NonNullable<T[P]>
-}
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string
@@ -34,11 +31,13 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query'
-  hello: Scalars['String']
+  activities?: Maybe<Array<Activity>>
 }
 
-export type QueryhelloArgs = {
-  greetings: Scalars['String']
+export type Activity = {
+  __typename?: 'Activity'
+  id: Scalars['Int']
+  name: Scalars['String']
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
@@ -142,6 +141,8 @@ export type DirectiveResolverFn<
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>
+  Activity: ResolverTypeWrapper<Activity>
+  Int: ResolverTypeWrapper<Scalars['Int']>
   String: ResolverTypeWrapper<Scalars['String']>
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>
 }
@@ -149,6 +150,8 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Query: {}
+  Activity: Activity
+  Int: Scalars['Int']
   String: Scalars['String']
   Boolean: Scalars['Boolean']
 }
@@ -157,20 +160,54 @@ export type QueryResolvers<
   ContextType = MercuriusContext,
   ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']
 > = {
-  hello?: Resolver<
-    ResolversTypes['String'],
+  activities?: Resolver<
+    Maybe<Array<ResolversTypes['Activity']>>,
     ParentType,
-    ContextType,
-    RequireFields<QueryhelloArgs, 'greetings'>
+    ContextType
   >
+}
+
+export type ActivityResolvers<
+  ContextType = MercuriusContext,
+  ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']
+> = {
+  id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>
+  isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }
 
 export type Resolvers<ContextType = MercuriusContext> = {
   Query?: QueryResolvers<ContextType>
+  Activity?: ActivityResolvers<ContextType>
 }
 
-export interface Loaders {}
-
+export type Loader<TReturn, TObj, TParams, TContext> = (
+  queries: Array<{
+    obj: TObj
+    params: TParams
+  }>,
+  context: TContext & {
+    reply: import('fastify').FastifyReply
+  }
+) => Promise<Array<import('mercurius-codegen').DeepPartial<TReturn>>>
+export type LoaderResolver<TReturn, TObj, TParams, TContext> =
+  | Loader<TReturn, TObj, TParams, TContext>
+  | {
+      loader: Loader<TReturn, TObj, TParams, TContext>
+      opts?: {
+        cache?: boolean
+      }
+    }
+export interface Loaders<
+  TContext = import('mercurius').MercuriusContext & {
+    reply: import('fastify').FastifyReply
+  }
+> {
+  Activity?: {
+    id?: LoaderResolver<Scalars['Int'], Activity, {}, TContext>
+    name?: LoaderResolver<Scalars['String'], Activity, {}, TContext>
+  }
+}
 declare module 'mercurius' {
   interface IResolvers
     extends Resolvers<import('mercurius').MercuriusContext> {}
