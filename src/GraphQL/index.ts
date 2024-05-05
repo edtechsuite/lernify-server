@@ -1,7 +1,6 @@
 import path from 'path'
 import mercurius from 'mercurius'
 import { codegenMercurius, gql } from 'mercurius-codegen'
-import { Type } from '@fastify/type-provider-typebox'
 import { ServerWithTypes } from '../server'
 
 export default async (app: ServerWithTypes) => {
@@ -27,20 +26,5 @@ export default async (app: ServerWithTypes) => {
 		targetPath: pathToTypes,
 	}).catch(console.error)
 
-	app.post(
-		'/gql',
-		{
-			schema: {
-				body: GqlSchema,
-			},
-		},
-		async function (req, reply) {
-			const query = req.body
-			return reply.graphql(query)
-		}
-	)
-
 	app.log.info('"GraphQL" service initialized')
 }
-
-const GqlSchema = Type.String()
