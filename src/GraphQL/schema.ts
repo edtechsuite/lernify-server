@@ -1,4 +1,4 @@
-import { gql } from 'mercurius-codegen'
+import gql from 'graphql-tag'
 
 export default gql`
 	type Query {
