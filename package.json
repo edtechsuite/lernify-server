@@ -18,9 +18,10 @@
 		"test": "jest",
 		"test.watch": "jest --watch",
 		"cleanBuildFolder": "rimraf build/",
-		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css build/",
+		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css src/**/*.graphql build/",
 		"db.dump": "node ./dbDump.js",
-		"db.restore": "node ./dbRestore.js"
+		"db.restore": "node ./dbRestore.js",
+		"graphQLCodegen": "graphql-codegen --config codegen.ts"
 	},
 	"repository": {
 		"type": "git",
@@ -66,6 +67,9 @@
 		"winston": "^3.6.0"
 	},
 	"devDependencies": {
+		"@graphql-codegen/cli": "5.0.2",
+		"@graphql-codegen/typescript": "4.0.6",
+		"@graphql-codegen/typescript-resolvers": "4.0.6",
 		"@types/graphql-depth-limit": "^1.1.6",
 		"@types/graphql-validation-complexity": "^0.4.4",
 		"@types/jest": "^28.1.7",

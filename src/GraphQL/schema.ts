@@ -1,43 +1,6 @@
-import gql from 'graphql-tag'
+import { readFileSync } from 'fs'
+import path from 'path'
 
-export default gql`
-	type Query {
-		activities: [Activity!]
-	}
-
-	type Activity {
-		id: Int!
-		name: String!
-		type: String!
-		outerId: String!
-		deleted: Boolean!
-		createdAt: DateTime!
-		updatedAt: DateTime!
-		updatedBy: Int!
-		updatedByUser: User
-		archived: Boolean!
-		organizationId: Int!
-		organization: Organization!
-		performerId: Int
-		performer: User
-		participants: [Participants!]!
-	}
-
-	type Organization {
-		id: Int!
-	}
-	type User {
-		id: Int!
-		name: String!
-		email: String!
-		# outerId: String!
-		# systemRole: String
-		createdAt: DateTime!
-		performingActivities: [Activity!]!
-	}
-	type Participants {
-		id: Int!
-	}
-
-	scalar DateTime
-`
+export default readFileSync(path.resolve(__dirname, './schema.graphql'), {
+	encoding: 'utf-8',
+})
