@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"start": "node ./build/index.js",
+		"start": "node ./build/src/index.js",
 		"dev": "nodemon",
 		"build": "npm run cleanBuildFolder && tsc -p tsconfig.json && npm run copyExtraBuildFiles",
 		"migrate.create": "node-pg-migrate create",
@@ -18,7 +18,7 @@
 		"test": "jest",
 		"test.watch": "jest --watch",
 		"cleanBuildFolder": "rimraf build/",
-		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css src/**/*.graphql build/",
+		"copyExtraBuildFiles": "copyfiles -u 1 src/**/*.html src/**/*.htm src/**/*.css src/**/*.graphql build/src",
 		"db.dump": "node ./dbDump.js",
 		"db.restore": "node ./dbRestore.js",
 		"graphQLCodegen": "graphql-codegen --config codegen.ts"
