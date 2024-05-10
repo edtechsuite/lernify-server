@@ -87,8 +87,7 @@ export async function App() {
 
 	await app.register(dumpMaker, { prefix: '/dump' })
 
-	// codegenMercurius doesn't work with plugins
-	GraphQL(app)
+	await app.register(GraphQL, { prefix: '/graphql' })
 
 	app.after(routes)
 	await app.ready()

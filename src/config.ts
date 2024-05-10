@@ -2,6 +2,7 @@ const oneDayInMs = 1000 * 60 * 60 * 24
 const config = getConfig()
 
 export const isProduction = config.isProduction
+export const isDevelopment = !config.isProduction
 export const PORT = config.PORT
 export const dbConnectionString = config.dbConnectionString
 export const inviteTokenExpiration = config.inviteTokenExpiration
