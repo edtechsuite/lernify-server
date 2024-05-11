@@ -132,12 +132,8 @@ const FilterSchema = Type.Array(
 		}),
 		Type.Object({
 			field: Type.Literal('group'),
-			value: Type.String(),
-			operation: Type.Union([
-				Type.Literal('contains'),
-				Type.Literal('startsWith'),
-				Type.Literal('endsWith'),
-			]),
+			value: Type.Array(Type.Number()),
+			operation: Type.Union([Type.Literal('is')]),
 		}),
 	])
 )
