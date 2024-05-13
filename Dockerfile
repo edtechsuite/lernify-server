@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:lts-alpine
 
 ENV DATABASE_URL=
 ENV PROJECT_ID=
