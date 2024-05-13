@@ -6,8 +6,8 @@ export type TagFilter = {
 }
 export type GroupsFilter = {
 	field: 'group'
-	value: string
-	operation: 'contains' | 'startsWith' | 'endsWith'
+	value: number[]
+	operation: 'is'
 }
 export type NameFilter = {
 	field: 'name'

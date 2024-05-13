@@ -20,8 +20,7 @@ import { setCurrentOrganizationToRequest } from './organizations/setCurrentOrgan
 import { Mailer } from './messaging'
 import { server } from './server'
 import { dumpMaker } from './dumpMaker'
-// https://github.com/ajv-validator/ajv
-// https://github.com/sinclairzx81/typebox
+import GraphQL from './GraphQL'
 
 export async function App() {
 	// TODO: move to separate plugin
@@ -87,6 +86,8 @@ export async function App() {
 	await app.register(b2b, { prefix: '/api/b2b' })
 
 	await app.register(dumpMaker, { prefix: '/dump' })
+
+	await app.register(GraphQL, { prefix: '/graphql' })
 
 	app.after(routes)
 	await app.ready()
