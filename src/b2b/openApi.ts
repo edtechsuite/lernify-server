@@ -8,12 +8,12 @@ export async function initiateOpenApi(app: FastifyInstance) {
 				title: 'Checkinizer B2B API',
 			},
 			servers: [
+				// {
+				// 	url: 'http://localhost:4000',
+				// 	description: 'Development server',
+				// },
 				{
-					url: 'http://localhost:4000',
-					description: 'Development server',
-				},
-				{
-					url: 'https://app.checkinizer.com',
+					url: 'https://api.checkinizer.com',
 					description: 'Production server',
 				},
 			],
