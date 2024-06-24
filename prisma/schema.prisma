@@ -74,6 +74,7 @@ model students {
   updatedAt            DateTime               @default(now()) @db.Timestamp(6)
   updatedBy            Int
   deleted              Boolean                @default(false)
+  email                String?                @db.VarChar(320)
   organizationRecord   organizations          @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users                users                  @relation(fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   studentsToActivities studentsToActivities[]
@@ -152,7 +153,7 @@ model organizationUnit {
 model unit2participant {
   id            String           @id @db.Uuid
   unitId        String           @db.Uuid
-  participantId Int
-  participant   students         @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  participantId Int?
+  participant   students?        @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   unit          organizationUnit @relation(fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

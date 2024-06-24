@@ -7,12 +7,13 @@ export function createParticipant(
 	orgId: number,
 	userId: number
 ) {
-	const { name, tags, outerId, unit } = params
+	const { name, tags, outerId, unit, email } = params
 	return prisma.students.create({
 		data: {
 			name,
 			tags: tags.map((t) => t.trim()),
 			outerId,
+			email,
 			organization: orgId,
 			updatedBy: userId,
 			unit2participant: unit
