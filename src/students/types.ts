@@ -16,8 +16,7 @@ export type StudentRecord = {
 	updatedAt: string
 }
 
-export type StudentCreate = Pick<
-	StudentRecord,
-	'tags' | 'name' | 'organization' | 'outerId'
->
+export type StudentCreate = Pick<StudentRecord, 'tags' | 'name' | 'outerId'> & {
+	unit?: string
+}
 export type StudentUpdate = Pick<StudentRecord, 'tags' | 'name'>

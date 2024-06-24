@@ -2,13 +2,13 @@ import { FastifyInstance } from 'fastify'
 import { unassignParticipantFromAllActivities } from '../activities/businessLayer/participation'
 import { isDatabaseError } from '../dal/databaseError'
 import {
-	createStudentQuery,
 	getStudentByIdQuery,
 	getStudentByNameAndOrganizationQuery,
 	updateStudentQuery,
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
 import { StudentCreate, StudentUpdate } from './types'
+import { createParticipant } from './domain/createParticipant'
 
 export function initHandlers(app: FastifyInstance) {
 	app.get(`/`, {
@@ -169,9 +169,6 @@ export function initHandlers(app: FastifyInstance) {
 		'/',
 		{
 			schema: {
-				headers: {
-					Authorization: { type: 'string' },
-				},
 				body: {
 					type: 'object',
 					required: ['name', 'tags', 'outerId'],
@@ -184,27 +181,25 @@ export function initHandlers(app: FastifyInstance) {
 							},
 						},
 						outerId: { type: 'string' },
+						unit: { type: 'string' },
 					},
 				},
 			},
 			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
-			const pool = app.pg.pool
-
 			if (!req.user || !req.organization) {
 				return reply.code(403).send('Forbidden')
 			}
 
 			try {
-				const result = await createStudentQuery(pool, {
-					...req.body,
-					tags: req.body.tags.map((t) => t.trim()),
-					organization: req.organization.id,
-					updatedBy: req.user.id,
-				})
+				const result = await createParticipant(
+					req.body,
+					req.organization.id,
+					req.user.id
+				)
 
-				reply.send(result.rows[0])
+				reply.send(result)
 			} catch (error) {
 				if (isDatabaseError(error)) {
 					if (error.code === '23505') {

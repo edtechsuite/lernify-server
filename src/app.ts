@@ -9,6 +9,7 @@ import reportsService from './reports'
 import usersService from './users'
 import profilesService from './profiles'
 import b2b from './b2b'
+import organizationUnits from './organizationUnits'
 import { setProfileToRequest } from './profiles/setProfileToRequest'
 import { testConnection } from './utils/postgres'
 import { CLIENT_EMAIL, PRIVATE_KEY, PROJECT_ID } from './auth/config'
@@ -82,6 +83,7 @@ export async function App() {
 	await app.register(studentsService, { prefix: '/students' })
 	await app.register(activitiesService, { prefix: '/activities' })
 	await app.register(reportsService, { prefix: '/report' })
+	await app.register(organizationUnits, { prefix: '/units' })
 
 	await app.register(b2b, { prefix: '/api/b2b' })
 
