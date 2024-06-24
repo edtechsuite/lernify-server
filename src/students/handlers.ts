@@ -1,4 +1,5 @@
-import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
+import { ServerWithTypes } from '../server'
 import { unassignParticipantFromAllActivities } from '../activities/businessLayer/participation'
 import { isDatabaseError } from '../dal/databaseError'
 import {
@@ -7,10 +8,12 @@ import {
 	updateStudentQuery,
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
-import { StudentCreate, StudentUpdate } from './types'
+import { StudentUpdate } from './types'
 import { createParticipant } from './domain/createParticipant'
 
-export function initHandlers(app: FastifyInstance) {
+export function initHandlers(app: ServerWithTypes) {
+	app.addHook('preHandler', app.auth([app.verifyOrgAccess]))
+
 	app.get(`/`, {
 		schema: {
 			params: {
@@ -20,7 +23,6 @@ export function initHandlers(app: FastifyInstance) {
 				},
 			},
 		},
-		preHandler: [app.verifyOrgAccess],
 		handler: async (req, reply) => {
 			return prisma.students.findMany({
 				where: {
@@ -59,7 +61,6 @@ export function initHandlers(app: FastifyInstance) {
 				},
 			},
 		},
-		preHandler: [app.verifyOrgAccess],
 		handler: async (req) => {
 			const result = await prisma.studentsToActivities.findMany({
 				where: {
@@ -115,7 +116,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const { id } = req.params
@@ -143,7 +143,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const { id } = req.params
@@ -163,29 +162,17 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
-	app.post<{
-		Body: StudentCreate
-	}>(
+	app.post(
 		'/',
 		{
 			schema: {
-				body: {
-					type: 'object',
-					required: ['name', 'tags', 'outerId'],
-					properties: {
-						name: { type: 'string' },
-						tags: {
-							type: 'array',
-							items: {
-								type: 'string',
-							},
-						},
-						outerId: { type: 'string' },
-						unit: { type: 'string' },
-					},
-				},
+				body: Type.Object({
+					name: Type.String(),
+					tags: Type.Array(Type.String()),
+					outerId: Type.String(),
+					unit: Type.String(),
+				}),
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			if (!req.user || !req.organization) {
@@ -245,7 +232,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const pool = await app.pg.pool
@@ -281,7 +267,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const { name } = req.params
