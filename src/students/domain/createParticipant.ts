@@ -12,6 +12,7 @@ export async function createParticipant(
 		const existingStudent = await prisma.students.findFirst({
 			where: {
 				email,
+				organization: orgId,
 			},
 		})
 		if (existingStudent) {
