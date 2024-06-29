@@ -270,7 +270,7 @@ export function initHandlers(app: FastifyInstance) {
 				const invite = await inviteUser(decodedToken.uid, email, orgId, role)
 
 				// TODO: probably we need to use `env` variable for the hostname in the production
-				const link = `${req.headers.origin}/${invite.organizations.key}/invite/confirm/${invite.token}`
+				const link = `${req.headers.origin}/invite/confirm/${invite.token}`
 
 				await req.mailer.invite({
 					email,

@@ -1,16 +1,19 @@
-import { FastifyInstance } from 'fastify'
+import { Type } from '@sinclair/typebox'
+import { ServerWithTypes } from '../server'
 import { unassignParticipantFromAllActivities } from '../activities/businessLayer/participation'
 import { isDatabaseError } from '../dal/databaseError'
 import {
-	createStudentQuery,
 	getStudentByIdQuery,
 	getStudentByNameAndOrganizationQuery,
 	updateStudentQuery,
 } from '../dal/students'
 import { prisma } from '../utils/prisma'
-import { StudentCreate, StudentUpdate } from './types'
+import { StudentUpdate } from './types'
+import { createParticipant } from './domain/createParticipant'
 
-export function initHandlers(app: FastifyInstance) {
+export function initHandlers(app: ServerWithTypes) {
+	app.addHook('preHandler', app.auth([app.verifyOrgAccess]))
+
 	app.get(`/`, {
 		schema: {
 			params: {
@@ -20,7 +23,6 @@ export function initHandlers(app: FastifyInstance) {
 				},
 			},
 		},
-		preHandler: [app.verifyOrgAccess],
 		handler: async (req, reply) => {
 			return prisma.students.findMany({
 				where: {
@@ -59,7 +61,6 @@ export function initHandlers(app: FastifyInstance) {
 				},
 			},
 		},
-		preHandler: [app.verifyOrgAccess],
 		handler: async (req) => {
 			const result = await prisma.studentsToActivities.findMany({
 				where: {
@@ -115,7 +116,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const { id } = req.params
@@ -143,7 +143,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const { id } = req.params
@@ -163,48 +162,32 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
-	app.post<{
-		Body: StudentCreate
-	}>(
+	app.post(
 		'/',
 		{
 			schema: {
-				headers: {
-					Authorization: { type: 'string' },
-				},
-				body: {
-					type: 'object',
-					required: ['name', 'tags', 'outerId'],
-					properties: {
-						name: { type: 'string' },
-						tags: {
-							type: 'array',
-							items: {
-								type: 'string',
-							},
-						},
-						outerId: { type: 'string' },
-					},
-				},
+				body: Type.Object({
+					name: Type.String(),
+					tags: Type.Array(Type.String()),
+					outerId: Type.String(),
+					unit: Type.Optional(Type.String()),
+					email: Type.Optional(Type.String()),
+				}),
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
-			const pool = app.pg.pool
-
 			if (!req.user || !req.organization) {
 				return reply.code(403).send('Forbidden')
 			}
 
 			try {
-				const result = await createStudentQuery(pool, {
-					...req.body,
-					tags: req.body.tags.map((t) => t.trim()),
-					organization: req.organization.id,
-					updatedBy: req.user.id,
-				})
+				const result = await createParticipant(
+					req.body,
+					req.organization.id,
+					req.user.id
+				)
 
-				reply.send(result.rows[0])
+				reply.send(result)
 			} catch (error) {
 				if (isDatabaseError(error)) {
 					if (error.code === '23505') {
@@ -250,7 +233,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const pool = await app.pg.pool
@@ -286,7 +268,6 @@ export function initHandlers(app: FastifyInstance) {
 					},
 				},
 			},
-			preHandler: [app.verifyOrgAccess],
 		},
 		async (req, reply) => {
 			const { name } = req.params

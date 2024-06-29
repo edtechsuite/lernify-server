@@ -3,6 +3,9 @@ import { getProfile, getProfiles, updateProfile } from './domain'
 import { ForbiddenError } from '../utils/errors'
 
 export function initHandlers(app: FastifyInstance) {
+	// TODO: use this approach to protect routes
+	// app.addHook('preHandler', app.auth([app.verifyJWT]))
+
 	app.put<{
 		Body: {
 			name: string
@@ -71,6 +74,7 @@ export function initHandlers(app: FastifyInstance) {
 			preHandler: [app.verifyJWT],
 		},
 		async (req) => {
+			// TODO: `profile` will not be there if organization is not set
 			const { id } = req.profile!
 			const profiles = getProfile(id)
 			return profiles

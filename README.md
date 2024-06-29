@@ -19,6 +19,12 @@
   - Added/removed npm modules
   - Added/removed services
 
+## B2B API
+
+Swagger documentation could be found here: https://api.checkinizer.com/api/b2b/docs
+
+There is a token based authorization. To obtain token the user with at least administrator rights have to generate token in the application settings.
+
 ## TODO
 
 - Addd `eslint`
@@ -108,6 +114,41 @@ npm run db.restore {connection string} "{path to backup file (*.sql)}"
 - `domain`: business logic
 - `utils`: module related internal utilities
 - `api`: endpoints
+
+# Feature: Organization structure
+
+## Database
+
+### Fields
+
+- id (UUID)
+- name (String)
+- parent (UUID, Nullable)
+
+## Example
+
+- Some big corp
+  - Org name
+    - Lat
+      - External
+    - Ukraine
+      - Fin
+      - Eng
+
+# UX
+
+- Page accessible under the the Settings in the side menu
+- Filtering? (at least search by name)
+- org structure list
+- Org item editor
+  - Create
+  - Edit
+  - Remove (Soft remove?)
+- Everything is related to some org item
+  - Activities
+  - Participants
+  - Users
+- Org item as a reports parameter
 
 ## Tmp
 
