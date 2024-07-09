@@ -4,7 +4,12 @@ import { prisma } from '../utils/prisma'
 import { ServerWithTypes } from '../server'
 
 export function initHandlers(app: ServerWithTypes) {
-	app.addHook('preHandler', app.auth([app.verifyOrgAccess]))
+	app.addHook(
+		'preHandler',
+		app.auth([app.verifyOrgAccess, app.ensureUserIsSystemAdmin], {
+			relation: 'or',
+		})
+	)
 
 	app.post(
 		'/',
