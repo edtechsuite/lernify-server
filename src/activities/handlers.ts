@@ -10,6 +10,7 @@ import { ActivityUpdate, editActivity } from './domain/editActivity'
 import { getStudentParticipation } from './domain/participation'
 import { addParticipant } from './domain/addParticipant'
 import { removeParticipant } from './domain/removeParticipant'
+import organizations from '../organizations'
 
 export function initHandlers(app: FastifyInstance) {
 	// GET
@@ -137,7 +138,7 @@ export function initHandlers(app: FastifyInstance) {
 						? {
 								performer: {
 									include: {
-										organizationsConnections: {
+										organizationsConnected: {
 											where: {
 												organizationId: req.organization!.id,
 											},

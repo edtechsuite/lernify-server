@@ -4,8 +4,10 @@ import { getDecodedToken } from '../utils/request-context'
 import { checkPermissions } from './businessLayer/checkPermissions'
 import { updateUser } from './businessLayer/editUser'
 import { confirmInvitation, inviteUser } from './businessLayer/invite'
+import { ServerWithTypes } from '../server'
+import { getUsers } from './businessLayer/getUsers'
 
-export function initHandlers(app: FastifyInstance) {
+export async function initHandlers(app: ServerWithTypes) {
 	// GET me
 	app.get(
 		'/me',
@@ -17,57 +19,8 @@ export function initHandlers(app: FastifyInstance) {
 		}
 	)
 
-	// TODO: probably bag with wrong JOIN (duplicated records)
-	// TODO: should return user by id
-	// GET /
-	// TODO: probably remove
-	app.get<{
-		Params: {
-			orgId: string
-		}
-	}>(
-		'/:orgId',
-		{
-			schema: {
-				headers: {
-					Authorization: { type: 'string' },
-				},
-				params: {
-					orgId: { type: 'string' },
-				},
-			},
-			preHandler: [app.verifyJWT],
-		},
-		async (req, reply) => {
-			const decodedToken = getDecodedToken(req)
-			const client = await app.pg.connect()
-			const { orgId } = req.params
+	await app.register(adminProtectedUsers)
 
-			try {
-				// TODO: use ABAC
-				const hasPermissions = await checkPermissions(
-					client,
-					decodedToken.uid,
-					orgId
-				)
-				if (!hasPermissions) {
-					reply.status(403)
-					return reply.send('Forbidden')
-				}
-				const result = await client.query(
-					`SELECT "role", "users"."name", "users"."id", "users"."createdAt", "users"."email", "users"."outerId" FROM "usersToOrganizations"
-					INNER JOIN "users" ON "users"."id" = "usersToOrganizations"."userId"
-					WHERE "usersToOrganizations"."organizationId" = $1`,
-					[orgId]
-				)
-				reply.send(result.rows)
-			} catch (error: any) {
-				throw error
-			} finally {
-				client.release()
-			}
-		}
-	)
 	// GET /:id
 	app.get<{
 		Params: {
@@ -331,4 +284,29 @@ export function initHandlers(app: FastifyInstance) {
 			reply.code(code).send(message)
 		}
 	)
+}
+
+function adminProtectedUsers(
+	app: ServerWithTypes,
+	opts: any,
+	done: () => void
+) {
+	app.addHook(
+		'preHandler',
+		app.auth([app.verifyOrgAccess, app.ensureUserIsSystemAdmin], {
+			relation: 'or',
+		})
+	)
+
+	app.get(
+		'/',
+		{
+			schema: {},
+		},
+		async (req, reply) => {
+			return getUsers(req.organization?.id)
+		}
+	)
+
+	done()
 }
