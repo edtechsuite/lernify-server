@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { initHandlers } from './handlers'
 
-export default async (app: FastifyInstance, opts: any, done: () => void) => {
-	await initHandlers(app)
+export default (app: FastifyInstance, opts: any, done: () => void) => {
+	initHandlers(app)
 
 	app.log.info('"Users" service initialized')
 

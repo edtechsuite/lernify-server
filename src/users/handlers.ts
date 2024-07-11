@@ -10,7 +10,7 @@ import { Type } from '@fastify/type-provider-typebox'
 import { getUserOfOrganization } from './businessLayer/getUser'
 import { updateUser } from './businessLayer/updateUser'
 
-export async function initHandlers(app: ServerWithTypes) {
+export function initHandlers(app: ServerWithTypes) {
 	// GET me
 	app.get(
 		'/me',
@@ -22,7 +22,7 @@ export async function initHandlers(app: ServerWithTypes) {
 		}
 	)
 
-	await app.register(adminProtectedUsers)
+	app.register(adminProtectedUsers)
 
 	// GET /:id
 	app.get<{
