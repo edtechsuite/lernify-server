@@ -82,22 +82,22 @@ model students {
 }
 
 model users {
-  id                                                         Int                    @id @default(autoincrement())
-  name                                                       String                 @db.VarChar(1000)
-  email                                                      String                 @unique @db.VarChar(1000)
-  outerId                                                    String                 @unique @db.VarChar(1000)
-  createdAt                                                  DateTime               @default(now()) @db.Timestamp(6)
-  systemRole                                                 String?                @db.VarChar(100)
-  activities_activities_performerIdTousers                   activities[]           @relation("activities_performerIdTousers")
-  activities_activities_updatedByTousers                     activities[]           @relation("activities_updatedByTousers")
-  api_tokens                                                 api_tokens[]
-  invites                                                    invites[]
-  organizations_organizations_ownerTousers                   organizations[]        @relation("organizations_ownerTousers")
-  organizations_organizations_updatedByTousers               organizations[]        @relation("organizations_updatedByTousers")
-  students                                                   students[]
-  studentsToActivities                                       studentsToActivities[]
-  usersToOrganizations_usersToOrganizations_updatedByTousers usersToOrganizations[] @relation("usersToOrganizations_updatedByTousers")
-  organizationsConnections                                   usersToOrganizations[] @relation("usersToOrganizations_userIdTousers")
+  id                                       Int                    @id @default(autoincrement())
+  name                                     String                 @db.VarChar(1000)
+  email                                    String                 @unique @db.VarChar(1000)
+  outerId                                  String                 @unique @db.VarChar(1000)
+  createdAt                                DateTime               @default(now()) @db.Timestamp(6)
+  systemRole                               String?                @db.VarChar(100)
+  activities_activities_performerIdTousers activities[]           @relation("activities_performerIdTousers")
+  activities_activities_updatedByTousers   activities[]           @relation("activities_updatedByTousers")
+  api_tokens                               api_tokens[]
+  invites                                  invites[]
+  ownedOrganizations                       organizations[]        @relation("organizations_ownerTousers")
+  organizations_updatedBy                  organizations[]        @relation("organizations_updatedByTousers")
+  students                                 students[]
+  studentsToActivities                     studentsToActivities[]
+  usersToOrganizations_updatedBy           usersToOrganizations[] @relation("usersToOrganizations_updatedByTousers")
+  organizationsConnected                   usersToOrganizations[] @relation("usersToOrganizations_userIdTousers")
 }
 
 model usersToOrganizations {
