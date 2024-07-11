@@ -1,9 +1,10 @@
 import { prisma } from '../../utils/prisma'
 
-export async function getUsers(orgId: number) {
-	const u2oArray = await prisma.usersToOrganizations.findMany({
+export async function getUserOfOrganization(id: number, orgId: number) {
+	const u2o = await prisma.usersToOrganizations.findFirstOrThrow({
 		where: {
 			organizationId: orgId,
+			userId: id,
 		},
 		include: {
 			user: {
@@ -17,9 +18,9 @@ export async function getUsers(orgId: number) {
 		},
 	})
 
-	return u2oArray.map((u2o) => ({
+	return {
 		...u2o.user,
 		role: u2o.role,
 		nameInOrganization: u2o.name,
-	}))
+	}
 }

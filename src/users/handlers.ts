@@ -2,10 +2,13 @@ import { FastifyInstance } from 'fastify'
 import { getUserByOuterId } from '../dal/getUserByOuterId'
 import { getDecodedToken } from '../utils/request-context'
 import { checkPermissions } from './businessLayer/checkPermissions'
-import { updateUser } from './businessLayer/editUser'
+import { updateUser as deprecatedUpdateUser } from './businessLayer/editUser'
 import { confirmInvitation, inviteUser } from './businessLayer/invite'
 import { ServerWithTypes } from '../server'
 import { getUsers } from './businessLayer/getUsers'
+import { Type } from '@fastify/type-provider-typebox'
+import { getUserOfOrganization } from './businessLayer/getUser'
+import { updateUser } from './businessLayer/updateUser'
 
 export async function initHandlers(app: ServerWithTypes) {
 	// GET me
@@ -184,7 +187,7 @@ export async function initHandlers(app: ServerWithTypes) {
 			}
 
 			return await (
-				await updateUser(pool, { id: userId, name })
+				await deprecatedUpdateUser(pool, { id: userId, name })
 			).rows[0]
 		}
 	)
@@ -304,7 +307,51 @@ function adminProtectedUsers(
 			schema: {},
 		},
 		async (req, reply) => {
-			return getUsers(req.organization?.id)
+			if (!req.organization) {
+				reply.status(400)
+				return { message: 'Organization not found' }
+			}
+			return getUsers(req.organization.id)
+		}
+	)
+
+	app.get(
+		'/:id',
+		{
+			schema: {
+				params: Type.Object({
+					id: Type.Number(),
+				}),
+			},
+		},
+		async (req, reply) => {
+			if (!req.organization) {
+				reply.status(400)
+				return { message: 'Organization not found' }
+			}
+			return getUserOfOrganization(req.params.id, req.organization.id)
+		}
+	)
+
+	app.patch(
+		'/:id',
+		{
+			schema: {
+				params: Type.Object({
+					id: Type.Number(),
+				}),
+				body: Type.Object({
+					nameInOrganization: Type.String(),
+					role: Type.String(),
+				}),
+			},
+		},
+		async (req, reply) => {
+			if (!req.organization) {
+				reply.status(400)
+				return { message: 'Organization not found' }
+			}
+			return updateUser(req.organization.id, req.params.id, req.body)
 		}
 	)
 
