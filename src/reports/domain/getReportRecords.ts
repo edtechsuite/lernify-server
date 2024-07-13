@@ -38,7 +38,7 @@ async function makeQuery(
 		sta."startDate",
 		sta."endDate",
 		u.id as "performerId",
-		u.name as "performerName"
+		u2o.name as "performerName"
 		${getConditionQuery(filtersQuery, filters ?? [])}
 		${getPaginationQuery(limit, offset)}
 	`
@@ -49,6 +49,7 @@ function getConditionQuery(filtersQuery: Prisma.Sql, filters: Filter[]) {
 		${getJoinS2AQuery(filters)}
 		LEFT JOIN "activities" as act ON sta."activityId" = act.id
 		LEFT JOIN "users" as u ON act."performerId" = u.id
+		LEFT JOIN "usersToOrganizations" as u2o ON act."performerId" = u2o."userId"
 		WHERE ${filtersQuery}
 	`
 }
