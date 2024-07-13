@@ -36,6 +36,7 @@ export async function removeParticipant({
 		data: {
 			endDate: new Date(),
 			updatedBy: userId,
+			updatedAt: new Date(),
 			leaveReasonComment: leaveReasonComment,
 		},
 	})
