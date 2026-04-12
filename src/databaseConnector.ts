@@ -7,7 +7,7 @@ export async function databaseConnector(
 	app: FastifyInstance,
 	options: {
 		connectionString: string
-	}
+	},
 ) {
 	const { disableDatabaseSecureConnection } = getConfig()
 	app.register(fastifyPostgres, {
@@ -18,7 +18,7 @@ export async function databaseConnector(
 					ssl: {
 						rejectUnauthorized: false,
 					},
-			  }),
+				}),
 	})
 }
 
