@@ -32,19 +32,6 @@ export async function App() {
 			privateKey: PRIVATE_KEY,
 		}),
 	})
-	const envToLogger: Record<string, any> = {
-		development: {
-			transport: {
-				target: 'pino-pretty',
-				options: {
-					translateTime: 'HH:MM:ss Z',
-					ignore: 'pid,hostname',
-				},
-			},
-		},
-		production: true,
-		test: false,
-	}
 	const app = server
 	app.log.info('Initializing an application')
 
@@ -54,8 +41,13 @@ export async function App() {
 	})
 
 	app.after(async () => {
-		await testConnection(app)
-		app.log.info('Database connection successful')
+		try {
+			await testConnection(app)
+			app.log.info('Database connection successful')
+		} catch (error) {
+			app.log.error('Database connection failed', error)
+			throw error
+		}
 	})
 	app.register(require('@fastify/cors'))
 

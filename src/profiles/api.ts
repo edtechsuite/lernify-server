@@ -48,7 +48,7 @@ export function initHandlers(app: FastifyInstance) {
 				}
 				throw error
 			}
-		}
+		},
 	)
 
 	app.get<{
@@ -65,7 +65,7 @@ export function initHandlers(app: FastifyInstance) {
 			const { deleted } = req.query
 			const profiles = getProfiles(organization!.id, deleted === 'true')
 			return profiles
-		}
+		},
 	)
 
 	app.get(
@@ -75,10 +75,13 @@ export function initHandlers(app: FastifyInstance) {
 		},
 		async (req) => {
 			// TODO: `profile` will not be there if organization is not set
-			const { id } = req.profile!
+			if (!req.profile) {
+				throw new ForbiddenError()
+			}
+			const { id } = req.profile
 			const profiles = getProfile(id)
 			return profiles
-		}
+		},
 	)
 
 	app.get<{
@@ -94,6 +97,6 @@ export function initHandlers(app: FastifyInstance) {
 			const { id } = req.params
 			const profiles = getProfile(parseInt(id, 10))
 			return profiles
-		}
+		},
 	)
 }
