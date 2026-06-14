@@ -3,6 +3,8 @@ import { reportByStudentsTags } from './domain'
 import { ServerWithTypes } from '../server'
 import { reportPreview } from './domain/reportPreview'
 import { reportByFilter } from './domain/reportByFilter'
+import { getDescendantUnitIds } from '../dal/organizationUnits'
+import { prisma } from '../utils/prisma'
 
 export function initHandlers(app: ServerWithTypes) {
 	app.get<{
@@ -60,9 +62,9 @@ export function initHandlers(app: ServerWithTypes) {
 				},
 				typeof tags === 'string' ? [tags] : tags,
 				order,
-				orderBy
+				orderBy,
 			)
-		}
+		},
 	)
 
 	app.post(
@@ -86,10 +88,10 @@ export function initHandlers(app: ServerWithTypes) {
 				{
 					page: page ?? 0,
 					pageSize: pageSize ?? 10,
-				}
+				},
 			)
 			return result
-		}
+		},
 	)
 
 	app.post(
@@ -100,17 +102,44 @@ export function initHandlers(app: ServerWithTypes) {
 			},
 		},
 		async (req) => {
-			const { filters, from, to } = req.body
+			const { filters, from, to, organizationalUnitId, includeDescendants } =
+				req.body
 			const fromDate = new Date(from)
 			const toDate = new Date(to)
 			if (!fromDate || !toDate) {
 				throw new Error('Invalid date format')
 			}
-			return reportByFilter(req.organization!, filters, {
+
+			let resolvedFilters = [...filters]
+
+			if (organizationalUnitId) {
+				const orgId = req.organization!.id
+				// Auth: verify unit belongs to this organization
+				const unit = await prisma.organizationUnit.findFirst({
+					where: { id: organizationalUnitId, organizationId: orgId },
+				})
+				if (!unit) {
+					throw new Error('Organizational unit not found or not authorized')
+				}
+
+				const unitIds = includeDescendants
+					? await getDescendantUnitIds(organizationalUnitId)
+					: [organizationalUnitId]
+
+				resolvedFilters = resolvedFilters.concat([
+					{
+						field: 'organizationUnit' as const,
+						value: unitIds,
+						operation: 'is' as const,
+					},
+				])
+			}
+
+			return reportByFilter(req.organization!, resolvedFilters, {
 				from: fromDate,
 				to: toDate,
 			})
-		}
+		},
 	)
 }
 
@@ -135,7 +164,12 @@ const FilterSchema = Type.Array(
 			value: Type.Array(Type.Number()),
 			operation: Type.Union([Type.Literal('is')]),
 		}),
-	])
+		Type.Object({
+			field: Type.Literal('organizationUnit'),
+			value: Type.Array(Type.String()),
+			operation: Type.Union([Type.Literal('is')]),
+		}),
+	]),
 )
 const PreviewSchema = Type.Object({
 	filters: FilterSchema,
@@ -144,13 +178,17 @@ const PreviewSchema = Type.Object({
 		Type.Number({
 			minimum: 1,
 			maximum: 100,
-		})
+		}),
 	),
 	from: Type.String(),
 	to: Type.String(),
+	organizationalUnitId: Type.Optional(Type.String()),
+	includeDescendants: Type.Optional(Type.Boolean()),
 })
 const ReportSchema = Type.Object({
 	filters: FilterSchema,
 	from: Type.String(),
 	to: Type.String(),
+	organizationalUnitId: Type.Optional(Type.String()),
+	includeDescendants: Type.Optional(Type.Boolean()),
 })

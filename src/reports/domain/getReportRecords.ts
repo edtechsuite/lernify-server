@@ -6,7 +6,7 @@ export async function getReportRecords(
 	orgId: number,
 	filters: Filter[],
 	range: Range,
-	config?: PaginationConfig
+	config?: PaginationConfig,
 ) {
 	const filterSql = makeFilterSql(filters, range, orgId)
 	const totalResult = await makeTotalQuery(filterSql, filters)
@@ -15,7 +15,7 @@ export async function getReportRecords(
 			filterSql,
 			config?.pageSize,
 			config && config.page * config.pageSize,
-			filters
+			filters,
 		),
 		total: totalResult[0].count,
 	}
@@ -25,7 +25,7 @@ async function makeQuery(
 	filtersQuery: Prisma.Sql,
 	limit?: number,
 	offset?: number,
-	filters?: Filter[]
+	filters?: Filter[],
 ) {
 	return await prisma.$queryRaw<QueryResult[]>`
 		SELECT DISTINCT ON (s."id", act."id")
@@ -63,7 +63,7 @@ function getJoinS2AQuery(filters: Filter[]) {
 	return Prisma.sql`
 		LEFT JOIN "studentsToActivities" as sta ON sta."participantId" = s.id AND sta."activityId" in (${Prisma.join(
 			activitiesFilter,
-			','
+			',',
 		)})
 	`
 }
@@ -103,10 +103,10 @@ function makeFilterSql(filters: Filter[], range: Range, orgId: number) {
 						Prisma.sql`sta."endDate" IS NULL`,
 						Prisma.sql`sta."endDate" > ${range.from}`,
 					],
-					' OR '
+					' OR ',
 				)})`,
 			]),
-		' AND '
+		' AND ',
 	)
 }
 
@@ -134,6 +134,15 @@ function getRequestPart(filter: Filter) {
 				SELECT "participantId" FROM "studentsToActivities" WHERE "activityId" IN (
 					${Prisma.join(value, ',')}
 				)
+			)`
+		case 'organizationUnit':
+			return Prisma.sql`s.id IN (
+				SELECT "participantId" FROM "unit2participant"
+				WHERE "unitId" IN (${Prisma.join(
+					value.map((id) => Prisma.sql`${id}::uuid`),
+					',',
+				)})
+				  AND "effectiveTo" IS NULL
 			)`
 		default:
 			throw new Error(`Unknown field: ${field}`)

@@ -140,20 +140,41 @@ model api_tokens {
 }
 
 model organizationUnit {
-  id               String             @id @db.Uuid
+  id               String                     @id @db.Uuid
   organizationId   Int
-  name             String             @default("") @db.VarChar(1000)
-  parentId         String?            @db.Uuid
-  organization     organizations      @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  parent           organizationUnit?  @relation("organizationUnitToorganizationUnit", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  units            organizationUnit[] @relation("organizationUnitToorganizationUnit")
+  name             String                     @default("") @db.VarChar(1000)
+  parentId         String?                    @db.Uuid
+  archivedAt       DateTime?                  @db.Timestamp(6)
+  sortOrder        Int                        @default(0)
+  organization     organizations              @relation(fields: [organizationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent           organizationUnit?          @relation("organizationUnitToorganizationUnit", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  units            organizationUnit[]         @relation("organizationUnitToorganizationUnit")
+  ancestorsOf      organizationUnitAncestry[] @relation("AncestorUnit")
+  descendantsOf    organizationUnitAncestry[] @relation("DescendantUnit")
   unit2participant unit2participant[]
+
+  @@index([organizationId, archivedAt], map: "organizationUnit_organizationId_archivedAt_index")
 }
 
 model unit2participant {
   id            String           @id @db.Uuid
   unitId        String           @db.Uuid
   participantId Int?
+  subjectType   String           @default("student") @db.VarChar(50)
+  effectiveFrom DateTime?        @db.Timestamp(6)
+  effectiveTo   DateTime?        @db.Timestamp(6)
   participant   students?        @relation(fields: [participantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   unit          organizationUnit @relation(fields: [unitId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model organizationUnitAncestry {
+  ancestorId   String           @db.Uuid
+  descendantId String           @db.Uuid
+  depth        Int
+  ancestor     organizationUnit @relation("AncestorUnit", fields: [ancestorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  descendant   organizationUnit @relation("DescendantUnit", fields: [descendantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([ancestorId, descendantId], map: "pk_org_unit_ancestry")
+  @@index([ancestorId, depth], map: "organizationUnitAncestry_ancestorId_depth_index")
+  @@index([descendantId, depth], map: "organizationUnitAncestry_descendantId_depth_index")
 }
