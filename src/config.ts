@@ -8,6 +8,7 @@ export const dbConnectionString = config.dbConnectionString
 export const inviteTokenExpiration = config.inviteTokenExpiration
 export const environment = process.env.NODE_ENV || 'production'
 export const prismaDebug = config.prismaDebug
+export const frontendUrl = config.frontendUrl
 export const apiTokenString = process.env.API_TOKEN_STRING ?? ''
 
 if (!apiTokenString || apiTokenString.length === 0) {
@@ -29,5 +30,6 @@ export function getConfig() {
 		disableDatabaseSecureConnection:
 			process.env.DISABLE_DATABASE_SECURE_CONNECTION === 'true',
 		prismaDebug: process.env.PRISMA_DEBUG === 'true',
+		frontendUrl: process.env.FRONTEND_URL,
 	}
 }

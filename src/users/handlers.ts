@@ -9,6 +9,7 @@ import { getUsers } from './businessLayer/getUsers'
 import { Type } from '@fastify/type-provider-typebox'
 import { getUserOfOrganization } from './businessLayer/getUser'
 import { updateUser } from './businessLayer/updateUser'
+import { frontendUrl } from '../config'
 
 export function initHandlers(app: ServerWithTypes) {
 	// GET me
@@ -225,8 +226,8 @@ export function initHandlers(app: ServerWithTypes) {
 			try {
 				const invite = await inviteUser(decodedToken.uid, email, orgId, role)
 
-				// TODO: probably we need to use `env` variable for the hostname in the production
-				const link = `${req.headers.origin}/invite/confirm/${invite.token}`
+				const origin = frontendUrl || req.headers.origin
+				const link = `${origin}/invite/confirm/${invite.token}`
 
 				await req.mailer.invite({
 					email,
