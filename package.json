@@ -62,7 +62,6 @@
 		"pg": "^8.7.3",
 		"prompts": "^2.4.2",
 		"resend": "^1.0.0",
-		"typescript": "^5.1.6",
 		"uuid": "^9.0.1",
 		"winston": "^3.6.0"
 	},
@@ -72,7 +71,7 @@
 		"@graphql-codegen/typescript-resolvers": "4.0.6",
 		"@types/graphql-depth-limit": "^1.1.6",
 		"@types/graphql-validation-complexity": "^0.4.4",
-		"@types/jest": "^28.1.7",
+		"@types/jest": "^28.1.8",
 		"@types/lodash.template": "^4.5.1",
 		"@types/uuid": "^9.0.8",
 		"copyfiles": "^2.4.1",
@@ -82,6 +81,7 @@
 		"prisma": "^5.12.1",
 		"rimraf": "^5.0.1",
 		"ts-jest": "^28.0.8",
-		"ts-node": "^10.7.0"
+		"ts-node": "^10.7.0",
+		"typescript": "^5.1.6"
 	}
 }

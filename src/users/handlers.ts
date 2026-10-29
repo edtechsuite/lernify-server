@@ -27,8 +27,8 @@ export function initHandlers(app: ServerWithTypes) {
 	// GET /:id
 	app.get<{
 		Params: {
-			orgId: string
-			id: string
+			orgId: number
+			id: number
 		}
 	}>(
 		'/:orgId/:id',
@@ -85,7 +85,7 @@ export function initHandlers(app: ServerWithTypes) {
 	// GET /:outerId
 	app.get<{
 		Params: {
-			orgId: string
+			orgId: number
 			outerId: string
 		}
 	}>(
