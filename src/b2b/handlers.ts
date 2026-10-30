@@ -24,10 +24,11 @@ export function initB2BTokenProtected(app: B2BFastifyInstance) {
 		},
 		async (req) => {
 			// TODO: check permissions of token
-			const { page = 0, pageSize = 10 } = req.query
+			const { page = 0, pageSize = 10, filter } = req.query
 			const [list, total] = await getParticipants({
 				page,
 				pageSize,
+				filter,
 				organization: req.b2bOrganization!,
 			})
 
@@ -43,6 +44,7 @@ export function initB2BTokenProtected(app: B2BFastifyInstance) {
 
 const participantsQsSchema = Type.Object({
 	...paginationSchemaPart,
+	filter: Type.Optional(Type.String()),
 })
 
 const participantsResponseSchema = Type.Object({

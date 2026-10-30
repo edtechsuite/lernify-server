@@ -3,6 +3,8 @@ import { ServerWithTypes } from '../server'
 import { unassignParticipantFromAllActivities } from '../activities/businessLayer/participation'
 import { isDatabaseError } from '../dal/databaseError'
 import {
+	findStudents,
+	findStudentsByActivity,
 	getStudentByIdQuery,
 	getStudentByNameAndOrganizationQuery,
 	updateStudentQuery,
@@ -14,7 +16,11 @@ import { createParticipant } from './domain/createParticipant'
 export function initHandlers(app: ServerWithTypes) {
 	app.addHook('preHandler', app.auth([app.verifyOrgAccess]))
 
-	app.get(`/`, {
+	app.get<{
+		Querystring: {
+			filter?: string
+		}
+	}>(`/`, {
 		schema: {
 			params: {
 				type: 'object',
@@ -22,14 +28,15 @@ export function initHandlers(app: ServerWithTypes) {
 					orgId: { type: 'string' },
 				},
 			},
-		},
-		handler: async (req, reply) => {
-			return prisma.students.findMany({
-				where: {
-					organization: req.organization?.id,
-					deleted: false,
+			querystring: {
+				type: 'object',
+				properties: {
+					filter: { type: 'string' },
 				},
-			})
+			},
+		},
+		handler: async (req) => {
+			return findStudents(req.organization!.id, req.query.filter)
 		},
 	})
 
@@ -41,6 +48,7 @@ export function initHandlers(app: ServerWithTypes) {
 		Querystring: {
 			startDate?: string
 			endDate?: string
+			filter?: string
 		}
 	}>({
 		method: 'GET',
@@ -58,42 +66,22 @@ export function initHandlers(app: ServerWithTypes) {
 				properties: {
 					startDate: { type: 'string' },
 					endDate: { type: 'string' },
+					filter: { type: 'string' },
 				},
 			},
 		},
 		handler: async (req) => {
-			const result = await prisma.studentsToActivities.findMany({
-				where: {
-					OR: [
-						{
-							endDate: null,
-						},
-						{
-							endDate: {
-								gte: req.query.endDate
-									? new Date(req.query.endDate)
-									: undefined,
-							},
-						},
-					],
-					activityId: parseInt(req.params.activity, 10),
-					startDate: {
-						lte: req.query.startDate
-							? new Date(req.query.startDate)
-							: undefined,
-					},
-					activity: {
-						is: {
-							organizationId: req.organization?.id
-								? req.organization.id
-								: undefined,
-						},
-					},
-				},
-				include: { participant: true },
+			return findStudentsByActivity({
+				activityId: parseInt(req.params.activity, 10),
+				organizationId: req.organization?.id,
+				startDate: req.query.startDate
+					? new Date(req.query.startDate)
+					: undefined,
+				endDate: req.query.endDate
+					? new Date(req.query.endDate)
+					: undefined,
+				filter: req.query.filter,
 			})
-
-			return result.map((item) => item.participant)
 		},
 	})
 

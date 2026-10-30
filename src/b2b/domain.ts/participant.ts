@@ -1,4 +1,5 @@
 import { calculateRate } from '../../attendance/domain/attendanceRate'
+import { toIlikePattern } from '../../dal/students'
 import { getAttendancesByGroup } from '../../firebase/attendances'
 import { AttendanceRecordFirebase } from '../../firebase/types'
 import { OrganizationRecord } from '../../organizations/types'
@@ -8,17 +9,19 @@ import { prisma } from '../../utils/prisma'
 type GetParticipantsParams = {
 	page: number
 	pageSize: number
+	filter?: string
 	organization: Pick<OrganizationRecord, 'id' | 'key'>
 	// TODO
 	// order: 'asc' | 'desc'
 	// orderBy: 'rate' | 'participantName' | 'activityName'
 }
 export async function getParticipants(params: GetParticipantsParams) {
-	const { organization, page, pageSize } = params
+	const { organization, page, pageSize, filter } = params
 	const [data, total] = await findParticipantsWithCount(
 		page,
 		pageSize,
-		organization.id
+		organization.id,
+		filter
 	)
 	const attendanceRecordsByActivity = await fetchAttendanceRecords(
 		data,
@@ -63,50 +66,110 @@ function parseActivities(
 	})
 }
 
-function findParticipantsWithCount(
+async function findParticipantsWithCount(
 	page: number,
 	pageSize: number,
-	organizationId: number
-) {
-	const where = { deleted: false, organization: organizationId }
-	return prisma.$transaction([
-		prisma.students.findMany({
-			where,
-			skip: page * pageSize,
-			take: pageSize,
-			select: {
-				id: true,
-				name: true,
-				tags: true,
-				outerId: true,
-				studentsToActivities: {
-					where: {
-						endDate: null,
-					},
-					include: {
-						activity: {
-							select: {
-								id: true,
-								name: true,
-								createdAt: true,
-								outerId: true,
-								performer: {
-									select: {
-										id: true,
-										name: true,
-										email: true,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}),
-		prisma.students.count({
-			where,
-		}),
-	])
+	organizationId: number,
+	filter?: string
+): Promise<[ParticipantWithS2A[], number]> {
+	const pattern = toIlikePattern(filter)
+	const offset = page * pageSize
+	const rows = await prisma.$queryRaw<
+		Array<{ total: number; data: RawParticipantWithS2A[] }>
+	>`
+		WITH filtered_students AS (
+			SELECT "id", "name", "tags", "outerId"
+			FROM "students"
+			WHERE "deleted" = false
+			  AND "organization" = ${organizationId}
+			  AND (
+			    ${pattern}::text IS NULL
+			    OR "name" ILIKE ${pattern} ESCAPE '\\'
+			    OR "email" ILIKE ${pattern} ESCAPE '\\'
+			    OR EXISTS (
+			      SELECT 1 FROM unnest("tags") AS t
+			      WHERE t ILIKE ${pattern} ESCAPE '\\'
+			    )
+			  )
+		),
+		counted AS (
+			SELECT COUNT(*)::int AS "total" FROM filtered_students
+		),
+		paged AS (
+			SELECT
+				fs."id",
+				fs."name",
+				fs."tags",
+				fs."outerId",
+				COALESCE(
+					(
+						SELECT json_agg(
+							json_build_object(
+								'activity',
+								CASE
+									WHEN a."id" IS NULL THEN NULL
+									ELSE json_build_object(
+										'id', a."id",
+										'name', a."name",
+										'createdAt', a."createdAt",
+										'outerId', a."outerId",
+										'performer',
+										CASE
+											WHEN u."id" IS NULL THEN NULL
+											ELSE json_build_object(
+												'id', u."id",
+												'name', u."name",
+												'email', u."email"
+											)
+										END
+									)
+								END
+							)
+						)
+						FROM "studentsToActivities" sta
+						LEFT JOIN "activities" a ON a."id" = sta."activityId"
+						LEFT JOIN "users" u ON u."id" = a."performerId"
+						WHERE sta."participantId" = fs."id"
+						  AND sta."endDate" IS NULL
+					),
+					'[]'::json
+				) AS "studentsToActivities"
+			FROM filtered_students fs
+			OFFSET ${offset}
+			LIMIT ${pageSize}
+		)
+		SELECT
+			c."total",
+			COALESCE(
+				(SELECT json_agg(p.*) FROM paged p),
+				'[]'::json
+			) AS "data"
+		FROM counted c
+	`
+
+	const row = rows[0] ?? { total: 0, data: [] }
+	const data: ParticipantWithS2A[] = row.data.map((student) => ({
+		...student,
+		studentsToActivities: student.studentsToActivities.map((s2a) => ({
+			activity: s2a.activity
+				? {
+						...s2a.activity,
+						createdAt: new Date(s2a.activity.createdAt),
+				  }
+				: null,
+		})),
+	}))
+
+	return [data, row.total]
+}
+
+type RawParticipantWithS2A = ParticipantShort & {
+	studentsToActivities: {
+		activity: (Omit<ActivityShort, 'performer'> & {
+			createdAt: string | Date
+			performer: ActivityShort['performer']
+		}) | null
+	}[]
 }
 
 async function fetchAttendanceRecords(
@@ -164,7 +227,7 @@ async function fetchAllAttendances(
 
 type ParticipantWithS2A = ParticipantShort & {
 	studentsToActivities: {
-		activity: { id: number; createdAt: Date; outerId: string } | null
+		activity: (ActivityShort & { createdAt: Date }) | null
 	}[]
 	outerId: string
 }
